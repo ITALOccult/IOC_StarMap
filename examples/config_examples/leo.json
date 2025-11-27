@@ -1,0 +1,192 @@
+{
+  "name": "Leo Constellation Map",
+  "description": "Mappa della costellazione del Leone centrata su Regolo",
+  "center": {
+    "ra": 152.0958,
+    "dec": 11.9672,
+    "comment": "Regolo (α Leonis) - RA: 10h 08m 22s, Dec: +11° 58' 02\""
+  },
+  "field_of_view": {
+    "width_degrees": 30.0,
+    "height_degrees": 30.0,
+    "comment": "Campo ampio per includere tutta la costellazione"
+  },
+  "image": {
+    "width": 3840,
+    "height": 2160,
+    "background_color": {
+      "r": 5,
+      "g": 5,
+      "b": 15,
+      "a": 255,
+      "comment": "Blu scuro notturno"
+    }
+  },
+  "projection": {
+    "type": "stereographic",
+    "comment": "Proiezione stereografica standard per mappe celesti"
+  },
+  "grid": {
+    "show": true,
+    "ra_spacing_hours": 1.0,
+    "dec_spacing_degrees": 10.0,
+    "color": {
+      "r": 80,
+      "g": 80,
+      "b": 100,
+      "a": 255,
+      "comment": "Grigio-blu tenue"
+    },
+    "line_width": 1.0
+  },
+  "equator": {
+    "show": true,
+    "color": {
+      "r": 100,
+      "g": 150,
+      "b": 200,
+      "a": 255,
+      "comment": "Azzurro"
+    },
+    "line_width": 2.0,
+    "label": "Equatore Celeste"
+  },
+  "ecliptic": {
+    "show": true,
+    "color": {
+      "r": 200,
+      "g": 150,
+      "b": 100,
+      "a": 255,
+      "comment": "Arancione (il Leone è zodiacale)"
+    },
+    "line_width": 2.0,
+    "label": "Eclittica",
+    "comment": "Regolo è molto vicina all'eclittica"
+  },
+  "stars": {
+    "show": true,
+    "limiting_magnitude": 12.0,
+    "scale_factor": 1.2,
+    "color_by_spectral_type": true,
+    "show_sao_numbers": true,
+    "sao_number_threshold": 6.0,
+    "comment": "Numeri SAO solo per stelle visibili ad occhio nudo"
+  },
+  "labels": {
+    "show": true,
+    "font": "Arial",
+    "size": 12,
+    "color": {
+      "r": 255,
+      "g": 255,
+      "b": 200,
+      "a": 255,
+      "comment": "Giallo chiaro"
+    }
+  },
+  "display": {
+    "show_compass": true,
+    "show_scale": true,
+    "show_coordinates": true,
+    "title": "Costellazione del Leone (Leo)",
+    "subtitle": "Centrata su Regolo (α Leonis) - FOV 30° × 30°"
+  },
+  "overlays": {
+    "constellation_lines": {
+      "show": true,
+      "color": {
+        "r": 100,
+        "g": 150,
+        "b": 100,
+        "a": 180,
+        "comment": "Verde smeraldo traslucido"
+      },
+      "line_width": 2.0,
+      "constellations": ["Leo"],
+      "comment": "Disegna le linee della costellazione del Leone"
+    },
+    "constellation_boundaries": {
+      "show": true,
+      "color": {
+        "r": 80,
+        "g": 80,
+        "b": 80,
+        "a": 128
+      },
+      "line_width": 1.0,
+      "line_style": "dashed"
+    },
+    "named_stars": {
+      "show": true,
+      "stars": [
+        {
+          "name": "Regolo (α Leo)",
+          "ra": 152.0958,
+          "dec": 11.9672,
+          "magnitude": 1.35,
+          "label_offset_x": 10,
+          "label_offset_y": -10
+        },
+        {
+          "name": "Denebola (β Leo)",
+          "ra": 177.2647,
+          "dec": 14.5721,
+          "magnitude": 2.14,
+          "label_offset_x": 10,
+          "label_offset_y": 10
+        },
+        {
+          "name": "Algieba (γ Leo)",
+          "ra": 154.9926,
+          "dec": 19.8415,
+          "magnitude": 2.01,
+          "label_offset_x": -50,
+          "label_offset_y": 0
+        },
+        {
+          "name": "Zosma (δ Leo)",
+          "ra": 168.5269,
+          "dec": 20.5236,
+          "magnitude": 2.56,
+          "label_offset_x": 0,
+          "label_offset_y": -15
+        },
+        {
+          "name": "Chort (θ Leo)",
+          "ra": 168.5605,
+          "dec": 15.4294,
+          "magnitude": 3.34,
+          "label_offset_x": 10,
+          "label_offset_y": 0
+        }
+      ]
+    }
+  },
+  "catalog_settings": {
+    "use_local_mag18": true,
+    "mag18_path": "~/catalogs/gaia_mag18_v2.cat",
+    "query_sao": true,
+    "sao_threshold_mag": 6.0,
+    "parallel_enrichment": false,
+    "comment": "Usa catalogo locale se disponibile, altrimenti query online"
+  },
+  "output": {
+    "filename": "leo_constellation_map.png",
+    "format": "png",
+    "quality": 95
+  },
+  "metadata": {
+    "author": "IOC_StarMap",
+    "date": "2025-11-27",
+    "version": "1.0.0",
+    "notes": [
+      "Il Leone è una delle costellazioni zodiacali più riconoscibili",
+      "Regolo è la 21ª stella più luminosa del cielo",
+      "Il Leone contiene numerose galassie (Tripletto di Leo: M65, M66, NGC 3628)",
+      "Migliore visibilità: Marzo-Aprile nell'emisfero boreale",
+      "L'asterismo della Falce rappresenta la testa e la criniera",
+      "Il Trapezio posteriore rappresenta il corpo e la coda"
+    ]
+  }
+}

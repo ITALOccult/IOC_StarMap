@@ -16,12 +16,17 @@ target_link_libraries(example_programmatic PRIVATE starmap)
 add_executable(example_gaia gaia_query.cpp)
 target_link_libraries(example_gaia PRIVATE starmap)
 
+# Esempio costellazione del Leone
+add_executable(example_leo leo_constellation.cpp)
+target_link_libraries(example_leo PRIVATE starmap)
+
 # Installa esempi
 install(TARGETS 
     example_basic 
     example_json 
     example_programmatic 
     example_gaia
+    example_leo
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/examples
 )
 
@@ -30,5 +35,6 @@ install(FILES
     config_examples/orion.json
     config_examples/andromeda.json
     config_examples/custom.json
+    config_examples/leo.json
     DESTINATION ${CMAKE_INSTALL_DATADIR}/starmap/examples
 )
