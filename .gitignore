@@ -1,0 +1,19 @@
+# Build directories
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Generated files
+*.log
+*.out

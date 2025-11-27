@@ -1,0 +1,64 @@
+{
+  "center": {
+    "ra": 10.68,
+    "dec": 41.27
+  },
+  "field_of_view": {
+    "width": 8.0,
+    "height": 8.0
+  },
+  "image": {
+    "width": 2400,
+    "height": 1800
+  },
+  "projection": {
+    "type": "stereographic",
+    "coordinate_system": "equatorial"
+  },
+  "limiting_magnitude": 12.5,
+  "orientation": {
+    "rotation_angle": 0.0,
+    "north_up": true,
+    "east_left": true
+  },
+  "grid": {
+    "enabled": true,
+    "ra_step": 1.0,
+    "dec_step": 1.0,
+    "color": 1077952767,
+    "line_width": 0.5,
+    "show_labels": true,
+    "label_color": 3435973887,
+    "label_font_size": 10.0
+  },
+  "stars": {
+    "min_symbol_size": 0.8,
+    "max_symbol_size": 10.0,
+    "magnitude_range": 12.0,
+    "use_spectral_colors": true,
+    "default_color": 4294967295,
+    "show_names": true,
+    "show_sao_numbers": true,
+    "show_magnitudes": false,
+    "min_magnitude_for_label": 6.0,
+    "label_color": 4294967295,
+    "label_font_size": 9.0
+  },
+  "background_color": 255,
+  "display": {
+    "show_border": true,
+    "show_title": true,
+    "title": "Andromeda Galaxy Region (M31)",
+    "show_scale": true,
+    "show_legend": false,
+    "show_compass": true
+  },
+  "overlays": {
+    "constellation_lines": false,
+    "constellation_boundaries": false,
+    "constellation_names": false,
+    "milky_way": false,
+    "ecliptic": false,
+    "equator": true
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "center": {
+    "ra": 0.0,
+    "dec": 0.0
+  },
+  "field_of_view": {
+    "width": 20.0,
+    "height": 20.0
+  },
+  "image": {
+    "width": 1600,
+    "height": 1600
+  },
+  "projection": {
+    "type": "gnomonic",
+    "coordinate_system": "equatorial"
+  },
+  "limiting_magnitude": 10.0,
+  "grid": {
+    "enabled": true,
+    "ra_step": 30.0,
+    "dec_step": 15.0,
+    "show_labels": true
+  },
+  "stars": {
+    "use_spectral_colors": true,
+    "show_sao_numbers": true,
+    "min_magnitude_for_label": 5.0
+  },
+  "display": {
+    "show_border": true,
+    "show_title": true,
+    "title": "Custom Sky Map",
+    "show_compass": true
+  },
+  "overlays": {
+    "equator": true
+  }
+}
