@@ -5,6 +5,7 @@
 #include "starmap/core/Coordinates.h"
 #include <vector>
 #include <memory>
+#include <string>
 
 namespace starmap {
 namespace catalog {
@@ -22,11 +23,22 @@ struct GaiaQueryParameters {
 };
 
 /**
- * @brief Client per interrogare il catalogo GAIA via TAP/ADQL
+ * @brief Wrapper per IOC_GaiaLib - interroga il catalogo GAIA
+ * 
+ * Questa classe integra IOC_GaiaLib per accedere al catalogo GAIA
+ * usando sia query online (TAP/ADQL) sia cataloghi locali (Mag18).
+ * 
+ * @see https://github.com/manvalan/IOC_GaiaLib
  */
 class GaiaClient {
 public:
-    GaiaClient();
+    /**
+     * @brief Costruttore con opzione catalogo locale
+     * @param useMag18 Se true, usa catalogo locale Mag18 (raccomandato per G≤18)
+     * @param mag18Path Path al file gaia_mag18_v2.cat (opzionale)
+     */
+    explicit GaiaClient(bool useMag18 = true, 
+                       const std::string& mag18Path = "");
     ~GaiaClient();
 
     /**
@@ -38,8 +50,8 @@ public:
         const GaiaQueryParameters& params);
 
     /**
-     * @brief Query per ID GAIA specifico
-     * @param gaiaId ID sorgente GAIA (DR3)
+     * @brief Query per ID GAIA specifico (source_id)
+     * @param gaiaId ID sorgente GAIA DR3
      * @return Stella se trovata
      */
     std::shared_ptr<core::Star> queryById(long long gaiaId);
@@ -64,17 +76,38 @@ public:
     void setTapServiceUrl(const std::string& url);
 
     /**
-     * @brief Imposta timeout per le query
+     * @brief Imposta timeout per le query online
      */
     void setTimeout(int seconds);
+    
+    /**
+     * @brief Imposta rate limit per query online (queries/min)
+     */
+    void setRateLimit(int queriesPerMinute);
+    
+    /**
+     * @brief Verifica se il catalogo locale è disponibile
+     */
+    bool isLocalCatalogAvailable() const;
+    
+    /**
+     * @brief Ottieni statistiche cache/catalogo
+     */
+    struct CatalogStats {
+        size_t totalStars = 0;
+        double magLimit = 0.0;
+        bool isOnline = false;
+        std::pair<size_t, size_t> cacheHitsMisses = {0, 0};
+    };
+    
+    CatalogStats getStatistics() const;
 
 private:
     class Impl;
     std::unique_ptr<Impl> pImpl_;
     
-    std::string buildADQLQuery(const GaiaQueryParameters& params) const;
-    std::vector<std::shared_ptr<core::Star>> parseVOTable(
-        const std::string& votable) const;
+    // Conversione da ioc::gaia::GaiaStar a starmap::core::Star
+    std::shared_ptr<core::Star> convertGaiaStar(const void* gaiaStar) const;
 };
 
 } // namespace catalog

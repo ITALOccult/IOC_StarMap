@@ -1,204 +1,167 @@
 #include "starmap/catalog/GaiaClient.h"
-#include "starmap/utils/HttpClient.h"
-#include <sstream>
-#include <iomanip>
+#include <ioc_gaialib/gaia_catalog.h>
+#include <ioc_gaialib/gaia_client.h>
+#include <ioc_gaialib/types.h>
+#include <stdexcept>
 #include <cmath>
-#include <algorithm>
 
 namespace starmap {
 namespace catalog {
 
-// URL del servizio TAP di GAIA
-const std::string GAIA_TAP_URL = "https://gea.esac.esa.int/tap-server/tap";
-
 class GaiaClient::Impl {
 public:
-    Impl() : tapUrl_(GAIA_TAP_URL), timeout_(60) {}
-
-    std::string tapUrl_;
+    explicit Impl(bool useMag18, const std::string& mag18Path) 
+        : useMag18_(useMag18)
+        , onlineClient_(ioc::gaia::GaiaRelease::DR3)
+        , timeout_(60)
+        , rateLimit_(10) {
+        
+        onlineClient_.setRateLimit(rateLimit_);
+        onlineClient_.setTimeout(timeout_);
+        
+        // Inizializza catalogo locale se richiesto
+        if (useMag18_) {
+            try {
+                ioc_gaialib::GaiaCatalogConfig config;
+                if (!mag18Path.empty()) {
+                    config.mag18_catalog_path = mag18Path;
+                } else {
+                    // Prova percorsi standard
+                    const char* home = getenv("HOME");
+                    if (home) {
+                        config.mag18_catalog_path = std::string(home) + 
+                            "/catalogs/gaia_mag18_v2.cat";
+                    }
+                }
+                
+                if (!config.mag18_catalog_path.empty()) {
+                    unifiedCatalog_ = std::make_unique<ioc_gaialib::GaiaCatalog>(config);
+                    localCatalogAvailable_ = true;
+                }
+            } catch (const std::exception& e) {
+                // Fallback a query online
+                localCatalogAvailable_ = false;
+            }
+        }
+    }
+    
+    bool useMag18_;
+    bool localCatalogAvailable_ = false;
     int timeout_;
-    utils::HttpClient httpClient_;
+    int rateLimit_;
+    
+    ioc::gaia::GaiaClient onlineClient_;
+    std::unique_ptr<ioc_gaialib::GaiaCatalog> unifiedCatalog_;
 };
 
-GaiaClient::GaiaClient() : pImpl_(std::make_unique<Impl>()) {}
+GaiaClient::GaiaClient(bool useMag18, const std::string& mag18Path)
+    : pImpl_(std::make_unique<Impl>(useMag18, mag18Path)) {}
 
 GaiaClient::~GaiaClient() = default;
 
-std::string GaiaClient::buildADQLQuery(const GaiaQueryParameters& params) const {
-    std::ostringstream query;
+std::shared_ptr<core::Star> GaiaClient::convertGaiaStar(const void* gaiaStarPtr) const {
+    if (!gaiaStarPtr) return nullptr;
     
-    query << "SELECT TOP " << params.maxResults << " "
-          << "source_id, ra, dec, phot_g_mean_mag";
+    const auto& gaiaStar = *static_cast<const ioc::gaia::GaiaStar*>(gaiaStarPtr);
     
-    if (params.includeParallax) {
-        query << ", parallax";
+    auto star = std::make_shared<core::Star>();
+    
+    star->setGaiaId(gaiaStar.source_id);
+    star->setCoordinates(core::EquatorialCoordinates(gaiaStar.ra, gaiaStar.dec));
+    star->setMagnitude(gaiaStar.phot_g_mean_mag);
+    
+    if (gaiaStar.parallax > 0) {
+        star->setParallax(gaiaStar.parallax);
     }
     
-    if (params.includeProperMotion) {
-        query << ", pmra, pmdec";
+    star->setProperMotionRA(gaiaStar.pmra);
+    star->setProperMotionDec(gaiaStar.pmdec);
+    
+    // Color index BP-RP
+    double bpRp = gaiaStar.getBpRpColor();
+    if (!std::isnan(bpRp)) {
+        star->setColorIndex(bpRp);
     }
     
-    // Color index (BP-RP)
-    query << ", bp_rp";
-    
-    query << " FROM gaiadr3.gaia_source "
-          << "WHERE 1=CONTAINS("
-          << "POINT('ICRS', ra, dec), "
-          << "CIRCLE('ICRS', "
-          << std::fixed << std::setprecision(6)
-          << params.center.getRightAscension() << ", "
-          << params.center.getDeclination() << ", "
-          << params.radiusDegrees << "))";
-    
-    if (params.maxMagnitude < 30.0) {
-        query << " AND phot_g_mean_mag < " << params.maxMagnitude;
-    }
-    
-    query << " ORDER BY phot_g_mean_mag ASC";
-    
-    return query.str();
-}
-
-std::vector<std::shared_ptr<core::Star>> GaiaClient::parseVOTable(
-    const std::string& votable) const {
-    
-    std::vector<std::shared_ptr<core::Star>> stars;
-    
-    // Parser semplificato per VOTable
-    // In produzione si userebbe una libreria XML (es. libxml2 o pugixml)
-    
-    size_t pos = 0;
-    while ((pos = votable.find("<TR>", pos)) != std::string::npos) {
-        size_t endPos = votable.find("</TR>", pos);
-        if (endPos == std::string::npos) break;
-        
-        std::string row = votable.substr(pos, endPos - pos);
-        
-        auto star = std::make_shared<core::Star>();
-        
-        // Estrai i valori TD
-        std::vector<std::string> values;
-        size_t tdPos = 0;
-        while ((tdPos = row.find("<TD>", tdPos)) != std::string::npos) {
-            tdPos += 4;
-            size_t endTd = row.find("</TD>", tdPos);
-            if (endTd != std::string::npos) {
-                values.push_back(row.substr(tdPos, endTd - tdPos));
-                tdPos = endTd;
-            }
-        }
-        
-        if (values.size() >= 4) {
-            try {
-                // source_id, ra, dec, mag
-                star->setGaiaId(std::stoll(values[0]));
-                
-                double ra = std::stod(values[1]);
-                double dec = std::stod(values[2]);
-                star->setCoordinates(core::EquatorialCoordinates(ra, dec));
-                
-                star->setMagnitude(std::stod(values[3]));
-                
-                // Parallax se presente
-                if (values.size() > 4 && !values[4].empty() && values[4] != "NaN") {
-                    star->setParallax(std::stod(values[4]));
-                }
-                
-                // Proper motion
-                if (values.size() > 6) {
-                    if (!values[5].empty() && values[5] != "NaN") {
-                        star->setProperMotionRA(std::stod(values[5]));
-                    }
-                    if (!values[6].empty() && values[6] != "NaN") {
-                        star->setProperMotionDec(std::stod(values[6]));
-                    }
-                }
-                
-                // Color index
-                if (values.size() > 7 && !values[7].empty() && values[7] != "NaN") {
-                    star->setColorIndex(std::stod(values[7]));
-                }
-                
-                stars.push_back(star);
-            } catch (const std::exception&) {
-                // Ignora righe malformate
-            }
-        }
-        
-        pos = endPos;
-    }
-    
-    return stars;
+    return star;
 }
 
 std::vector<std::shared_ptr<core::Star>> GaiaClient::queryRegion(
     const GaiaQueryParameters& params) {
     
-    std::string adqlQuery = buildADQLQuery(params);
-    
-    // Prepara la richiesta TAP
-    std::ostringstream requestUrl;
-    requestUrl << pImpl_->tapUrl_ << "/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&QUERY=";
-    
-    // URL-encode della query
-    std::string encodedQuery;
-    for (char c : adqlQuery) {
-        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
-            encodedQuery += c;
-        } else if (c == ' ') {
-            encodedQuery += '+';
-        } else {
-            char hex[4];
-            snprintf(hex, sizeof(hex), "%%%02X", (unsigned char)c);
-            encodedQuery += hex;
-        }
-    }
-    
-    requestUrl << encodedQuery;
-    
-    pImpl_->httpClient_.setTimeout(pImpl_->timeout_);
+    std::vector<std::shared_ptr<core::Star>> stars;
     
     try {
-        std::string response = pImpl_->httpClient_.get(requestUrl.str());
-        return parseVOTable(response);
+        // Usa catalogo locale se disponibile e magnitudine compatibile
+        if (pImpl_->localCatalogAvailable_ && 
+            pImpl_->unifiedCatalog_ && 
+            params.maxMagnitude <= 18.0) {
+            
+            auto gaiaStars = pImpl_->unifiedCatalog_->queryCone(
+                params.center.getRightAscension(),
+                params.center.getDeclination(),
+                params.radiusDegrees,
+                params.maxResults
+            );
+            
+            for (const auto& gaiaStar : gaiaStars) {
+                if (gaiaStar.phot_g_mean_mag <= params.maxMagnitude) {
+                    auto star = convertGaiaStar(&gaiaStar);
+                    if (star) stars.push_back(star);
+                }
+            }
+            
+        } else {
+            // Fallback a query online
+            auto gaiaStars = pImpl_->onlineClient_.queryCone(
+                params.center.getRightAscension(),
+                params.center.getDeclination(),
+                params.radiusDegrees,
+                params.maxMagnitude
+            );
+            
+            for (const auto& gaiaStar : gaiaStars) {
+                auto star = convertGaiaStar(&gaiaStar);
+                if (star) stars.push_back(star);
+            }
+        }
+        
+        // Limita risultati
+        if (stars.size() > static_cast<size_t>(params.maxResults)) {
+            stars.resize(params.maxResults);
+        }
+        
     } catch (const std::exception& e) {
-        // Log error
-        return std::vector<std::shared_ptr<core::Star>>();
+        // Log errore e ritorna vettore vuoto
+        stars.clear();
     }
+    
+    return stars;
 }
 
 std::shared_ptr<core::Star> GaiaClient::queryById(long long gaiaId) {
-    std::ostringstream query;
-    query << "SELECT source_id, ra, dec, phot_g_mean_mag, parallax, "
-          << "pmra, pmdec, bp_rp FROM gaiadr3.gaia_source "
-          << "WHERE source_id = " << gaiaId;
-    
-    std::ostringstream requestUrl;
-    requestUrl << pImpl_->tapUrl_ << "/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&QUERY=";
-    
-    std::string encodedQuery;
-    for (char c : query.str()) {
-        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
-            encodedQuery += c;
-        } else if (c == ' ') {
-            encodedQuery += '+';
-        } else {
-            char hex[4];
-            snprintf(hex, sizeof(hex), "%%%02X", (unsigned char)c);
-            encodedQuery += hex;
-        }
-    }
-    
-    requestUrl << encodedQuery;
-    
     try {
-        std::string response = pImpl_->httpClient_.get(requestUrl.str());
-        auto stars = parseVOTable(response);
-        if (!stars.empty()) {
-            return stars[0];
+        // Prova prima catalogo locale
+        if (pImpl_->localCatalogAvailable_ && pImpl_->unifiedCatalog_) {
+            auto gaiaStarOpt = pImpl_->unifiedCatalog_->queryStar(
+                static_cast<uint64_t>(gaiaId)
+            );
+            
+            if (gaiaStarOpt.has_value()) {
+                return convertGaiaStar(&gaiaStarOpt.value());
+            }
         }
+        
+        // Fallback a query online
+        std::vector<uint64_t> ids = {static_cast<uint64_t>(gaiaId)};
+        auto gaiaStars = pImpl_->onlineClient_.queryBySourceIds(ids);
+        
+        if (!gaiaStars.empty()) {
+            return convertGaiaStar(&gaiaStars[0]);
+        }
+        
     } catch (const std::exception&) {
-        // Gestisci errore
+        // Ritorna nullptr in caso di errore
     }
     
     return nullptr;
@@ -210,41 +173,96 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryBox(
     double heightDeg,
     double maxMagnitude) {
     
-    // Converte box in query circolare approssimativa
-    double radius = std::sqrt(widthDeg * widthDeg + heightDeg * heightDeg) / 2.0;
-    
-    GaiaQueryParameters params;
-    params.center = center;
-    params.radiusDegrees = radius;
-    params.maxMagnitude = maxMagnitude;
-    
-    auto allStars = queryRegion(params);
-    
-    // Filtra per box rettangolare
-    std::vector<std::shared_ptr<core::Star>> boxStars;
-    double raMin = center.getRightAscension() - widthDeg / 2.0;
-    double raMax = center.getRightAscension() + widthDeg / 2.0;
-    double decMin = center.getDeclination() - heightDeg / 2.0;
-    double decMax = center.getDeclination() + heightDeg / 2.0;
-    
-    for (const auto& star : allStars) {
-        double ra = star->getCoordinates().getRightAscension();
-        double dec = star->getCoordinates().getDeclination();
-        
-        if (ra >= raMin && ra <= raMax && dec >= decMin && dec <= decMax) {
-            boxStars.push_back(star);
+    try {
+        // Usa query box di IOC_GaiaLib se disponibile
+        if (pImpl_->localCatalogAvailable_ && 
+            pImpl_->unifiedCatalog_ && 
+            maxMagnitude <= 18.0) {
+            
+            double raMin = center.getRightAscension() - widthDeg / 2.0;
+            double raMax = center.getRightAscension() + widthDeg / 2.0;
+            double decMin = center.getDeclination() - heightDeg / 2.0;
+            double decMax = center.getDeclination() + heightDeg / 2.0;
+            
+            // Approssima con cone search
+            double radius = std::sqrt(widthDeg * widthDeg + heightDeg * heightDeg) / 2.0;
+            auto gaiaStars = pImpl_->unifiedCatalog_->queryCone(
+                center.getRightAscension(),
+                center.getDeclination(),
+                radius,
+                10000
+            );
+            
+            std::vector<std::shared_ptr<core::Star>> boxStars;
+            for (const auto& gaiaStar : gaiaStars) {
+                if (gaiaStar.ra >= raMin && gaiaStar.ra <= raMax &&
+                    gaiaStar.dec >= decMin && gaiaStar.dec <= decMax &&
+                    gaiaStar.phot_g_mean_mag <= maxMagnitude) {
+                    
+                    auto star = convertGaiaStar(&gaiaStar);
+                    if (star) boxStars.push_back(star);
+                }
+            }
+            
+            return boxStars;
+            
+        } else {
+            // Fallback a query online
+            auto gaiaStars = pImpl_->onlineClient_.queryBox(
+                center.getRightAscension() - widthDeg / 2.0,
+                center.getRightAscension() + widthDeg / 2.0,
+                center.getDeclination() - heightDeg / 2.0,
+                center.getDeclination() + heightDeg / 2.0,
+                maxMagnitude
+            );
+            
+            std::vector<std::shared_ptr<core::Star>> stars;
+            for (const auto& gaiaStar : gaiaStars) {
+                auto star = convertGaiaStar(&gaiaStar);
+                if (star) stars.push_back(star);
+            }
+            
+            return stars;
         }
+        
+    } catch (const std::exception&) {
+        return std::vector<std::shared_ptr<core::Star>>();
     }
-    
-    return boxStars;
 }
 
 void GaiaClient::setTapServiceUrl(const std::string& url) {
-    pImpl_->tapUrl_ = url;
+    // IOC_GaiaLib usa URL fisso per GAIA ESA
+    // Questa funzione è mantenuta per compatibilità ma non ha effetto
 }
 
 void GaiaClient::setTimeout(int seconds) {
     pImpl_->timeout_ = seconds;
+    pImpl_->onlineClient_.setTimeout(seconds);
+}
+
+void GaiaClient::setRateLimit(int queriesPerMinute) {
+    pImpl_->rateLimit_ = queriesPerMinute;
+    pImpl_->onlineClient_.setRateLimit(queriesPerMinute);
+}
+
+bool GaiaClient::isLocalCatalogAvailable() const {
+    return pImpl_->localCatalogAvailable_;
+}
+
+GaiaClient::CatalogStats GaiaClient::getStatistics() const {
+    CatalogStats stats;
+    
+    if (pImpl_->unifiedCatalog_) {
+        auto catalogStats = pImpl_->unifiedCatalog_->getStatistics();
+        stats.totalStars = catalogStats.total_stars;
+        stats.magLimit = catalogStats.mag_limit;
+        stats.isOnline = false;
+        stats.cacheHitsMisses = catalogStats.cache_hits_misses;
+    } else {
+        stats.isOnline = true;
+    }
+    
+    return stats;
 }
 
 } // namespace catalog

@@ -33,13 +33,32 @@ starmap/
 - **Compiler**: C++17 o superiore (GCC 7+, Clang 5+, MSVC 2017+)
 - **CMake**: 3.15+
 - **Dipendenze**:
-  - [libcurl](https://curl.se/libcurl/) - Per query HTTP ai cataloghi
+  - [IOC_GaiaLib](https://github.com/manvalan/IOC_GaiaLib) - **OBBLIGATORIO**: Accesso catalogo GAIA DR3
+  - [libcurl](https://curl.se/libcurl/) - Per query HTTP ai cataloghi (richiesto da IOC_GaiaLib)
   - [nlohmann/json](https://github.com/nlohmann/json) - Per configurazione JSON
   - Opzionale: [stb_image_write](https://github.com/nothings/stb) - Per salvare PNG/JPEG
+  - Opzionale: Catalogo Mag18 V2 (14 GB) - Per query offline veloci (stelle G≤18)
 
 ## 🚀 Installazione
 
-### Build da Sorgenti
+### 1. Installa IOC_GaiaLib (Dipendenza Obbligatoria)
+
+```bash
+# Clone e compila IOC_GaiaLib
+git clone https://github.com/manvalan/IOC_GaiaLib.git
+cd IOC_GaiaLib
+
+# Build e installa
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+sudo cmake --install .
+
+# (Opzionale) Download catalogo Mag18 V2 per query offline veloci
+# Consulta https://github.com/manvalan/IOC_GaiaLib/docs/MAG18_V2_QUICKSTART.md
+```
+
+### 2. Build StarMap
 
 ```bash
 # Clone repository
@@ -49,7 +68,7 @@ cd IOC_StarMap
 # Crea directory build
 mkdir build && cd build
 
-# Configura con CMake
+# Configura con CMake (IOC_GaiaLib deve essere installata)
 cmake .. -DCMAKE_BUILD_TYPE=Release
 
 # Compila

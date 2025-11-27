@@ -7,7 +7,9 @@ namespace starmap {
 namespace catalog {
 
 CatalogManager::CatalogManager() 
-    : cacheEnabled_(true), parallelEnrichment_(false) {
+    : gaiaClient_(true)  // Usa Mag18 locale per default
+    , cacheEnabled_(true)
+    , parallelEnrichment_(false) {
 }
 
 CatalogManager::~CatalogManager() = default;

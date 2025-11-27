@@ -14,6 +14,9 @@ option(BUILD_TESTS "Build tests" OFF)
 find_package(CURL REQUIRED)
 find_package(nlohmann_json 3.2.0)
 
+# Find IOC_GaiaLib
+find_package(ioc_gaialib REQUIRED)
+
 if(NOT nlohmann_json_FOUND)
     message(STATUS "nlohmann_json not found, will use bundled version")
     set(JSON_BuildTests OFF CACHE INTERNAL "")
@@ -76,6 +79,7 @@ target_include_directories(starmap PUBLIC
 target_link_libraries(starmap
     PUBLIC
         nlohmann_json::nlohmann_json
+        ioc_gaialib
     PRIVATE
         ${CURL_LIBRARIES}
 )

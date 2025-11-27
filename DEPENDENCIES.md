@@ -1,6 +1,41 @@
 # Dipendenze
 
+## ⭐ IOC_GaiaLib (OBBLIGATORIO)
+
+StarMap richiede IOC_GaiaLib per accedere al catalogo GAIA DR3.
+
+### Installazione da GitHub
+
+```bash
+# Clone repository
+git clone https://github.com/manvalan/IOC_GaiaLib.git
+cd IOC_GaiaLib
+
+# Build e installa
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j$(nproc)
+sudo cmake --install .
+```
+
+### Catalogo Locale Mag18 V2 (Raccomandato)
+
+Per query offline veloci (stelle G≤18, copre 95% use cases):
+
+```bash
+# Scarica o genera catalogo Mag18 V2 (14 GB)
+# Vedi: https://github.com/manvalan/IOC_GaiaLib/blob/main/docs/MAG18_V2_QUICKSTART.md
+
+# Percorso standard
+mkdir -p ~/catalogs
+# Posiziona gaia_mag18_v2.cat in ~/catalogs/
+```
+
+StarMap utilizzerà automaticamente il catalogo locale se disponibile in `~/catalogs/gaia_mag18_v2.cat`.
+
 ## libcurl
+
+Richiesto da IOC_GaiaLib per query online.
 
 Su macOS (con Homebrew):
 ```bash
@@ -75,24 +110,35 @@ bool ImageBuffer::saveAsPNG(const std::string& filename) const {
 ## Build Completo
 
 ```bash
-# Installa dipendenze (Ubuntu/Debian)
+# 1. Installa dipendenze di sistema (Ubuntu/Debian)
 sudo apt-get install -y \
     build-essential \
     cmake \
     libcurl4-openssl-dev \
+    libxml2-dev \
+    zlib1g-dev \
     nlohmann-json3-dev
 
-# Clone e build
+# 2. Installa IOC_GaiaLib
+git clone https://github.com/manvalan/IOC_GaiaLib.git
+cd IOC_GaiaLib
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j$(nproc)
+sudo cmake --install .
+cd ../..
+
+# 3. Clone e build StarMap
 git clone https://github.com/manvalan/IOC_StarMap.git
 cd IOC_StarMap
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON
 cmake --build . -j$(nproc)
 
-# Test
+# 4. Test
 ./examples/example_basic
 
-# Installa
+# 5. Installa
 sudo cmake --install .
 ```
 

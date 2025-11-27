@@ -14,9 +14,24 @@
 
 ### Dependencies
 
-#### Required
+#### ⭐ Required
 
-1. **libcurl** - For HTTP requests to catalogs
+1. **IOC_GaiaLib** - GAIA DR3 catalog access (OBBLIGATORIO)
+
+   ```bash
+   # Clone and build IOC_GaiaLib
+   git clone https://github.com/manvalan/IOC_GaiaLib.git
+   cd IOC_GaiaLib
+   mkdir build && cd build
+   cmake .. -DCMAKE_BUILD_TYPE=Release
+   cmake --build . -j$(nproc)
+   sudo cmake --install .
+   cd ../../
+   ```
+   
+   **Nota**: IOC_GaiaLib richiede libcurl, libxml2, zlib
+
+2. **libcurl** - For HTTP requests (required by IOC_GaiaLib)
 
    **macOS (Homebrew)**:
    ```bash
@@ -25,15 +40,15 @@
 
    **Ubuntu/Debian**:
    ```bash
-   sudo apt-get install libcurl4-openssl-dev
+   sudo apt-get install libcurl4-openssl-dev libxml2-dev zlib1g-dev
    ```
 
    **Fedora/RHEL**:
    ```bash
-   sudo dnf install libcurl-devel
+   sudo dnf install libcurl-devel libxml2-devel zlib-devel
    ```
 
-2. **nlohmann/json** - For JSON configuration
+3. **nlohmann/json** - For JSON configuration
 
    **macOS (Homebrew)**:
    ```bash
@@ -49,6 +64,9 @@
 
 #### Optional
 
+- **Catalogo Mag18 V2** - Per query offline veloci (14 GB, stelle G≤18)
+  - Download: https://github.com/manvalan/IOC_GaiaLib/docs/MAG18_V2_QUICKSTART.md
+  - Path: `~/catalogs/gaia_mag18_v2.cat`
 - **stb_image_write** - For PNG/JPEG export (header-only, auto-downloaded)
 - **Doxygen** - For generating documentation
 
@@ -57,11 +75,18 @@
 ### Linux/macOS
 
 ```bash
-# 1. Clone repository
+# 0. Installa IOC_GaiaLib (se non già installata)
+git clone https://github.com/manvalan/IOC_GaiaLib.git
+cd IOC_GaiaLib
+mkdir build && cd build
+cmake .. && cmake --build . && sudo cmake --install .
+cd ../../
+
+# 1. Clone repository StarMap
 git clone https://github.com/manvalan/IOC_StarMap.git
 cd IOC_StarMap
 
-# 2. Download dependencies (if not installed system-wide)
+# 2. Download dipendenze JSON (se non installata system-wide)
 chmod +x download_deps.sh
 ./download_deps.sh
 
