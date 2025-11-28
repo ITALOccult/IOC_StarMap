@@ -12,7 +12,10 @@ option(BUILD_TESTS "Build tests" OFF)
 
 # Find dependencies
 find_package(CURL REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(LibXml2 REQUIRED)
 find_package(nlohmann_json 3.2.0)
+find_package(OpenMP)
 
 # Find IOC_GaiaLib
 find_package(ioc_gaialib REQUIRED)
@@ -82,7 +85,17 @@ target_link_libraries(starmap
         ioc_gaialib
     PRIVATE
         ${CURL_LIBRARIES}
+        ZLIB::ZLIB
+        LibXml2::LibXml2
 )
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(starmap PUBLIC OpenMP::OpenMP_CXX)
+else()
+    # Fallback per macOS con brew libomp
+    target_link_libraries(starmap PUBLIC "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+    target_include_directories(starmap PUBLIC "/opt/homebrew/opt/libomp/include")
+endif()
 
 # Set library properties
 set_target_properties(starmap PROPERTIES

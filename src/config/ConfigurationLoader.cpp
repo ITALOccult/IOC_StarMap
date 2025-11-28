@@ -1,5 +1,5 @@
 #include "starmap/config/ConfigurationLoader.h"
-#include "JSONConfigLoader.h"
+#include "starmap/config/JSONConfigLoader.h"
 #include <stdexcept>
 #include <algorithm>
 

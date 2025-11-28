@@ -1,9 +1,10 @@
 #include "starmap/catalog/GaiaClient.h"
-#include <ioc_gaialib/gaia_catalog.h>
+#include <ioc_gaialib/gaia_mag18_catalog_v2.h>
 #include <ioc_gaialib/gaia_client.h>
 #include <ioc_gaialib/types.h>
 #include <stdexcept>
 #include <cmath>
+#include <fstream>
 
 namespace starmap {
 namespace catalog {
@@ -22,20 +23,32 @@ public:
         // Inizializza catalogo locale se richiesto
         if (useMag18_) {
             try {
-                ioc_gaialib::GaiaCatalogConfig config;
-                if (!mag18Path.empty()) {
-                    config.mag18_catalog_path = mag18Path;
-                } else {
-                    // Prova percorsi standard
+                std::string catalogPath = mag18Path;
+                if (catalogPath.empty()) {
+                    // Prova percorsi standard (V2 prima, poi V1)
                     const char* home = getenv("HOME");
                     if (home) {
-                        config.mag18_catalog_path = std::string(home) + 
-                            "/catalogs/gaia_mag18_v2.cat";
+                        std::string v2Path = std::string(home) + "/catalogs/gaia_mag18_v2.mag18v2";
+                        std::string v1Path = std::string(home) + "/catalogs/gaia_mag18.cat.gz";
+                        
+                        // Verifica quale file esiste
+                        std::ifstream v2Test(v2Path);
+                        if (v2Test.good()) {
+                            catalogPath = v2Path;
+                        } else {
+                            std::ifstream v1Test(v1Path);
+                            if (v1Test.good()) {
+                                catalogPath = v1Path;
+                            }
+                        }
                     }
                 }
                 
-                if (!config.mag18_catalog_path.empty()) {
-                    unifiedCatalog_ = std::make_unique<ioc_gaialib::GaiaCatalog>(config);
+                if (!catalogPath.empty()) {
+                    // Usa Mag18CatalogV2 (supporta sia V2 che V1)
+                    mag18Catalog_ = std::make_unique<ioc::gaia::Mag18CatalogV2>(
+                        catalogPath
+                    );
                     localCatalogAvailable_ = true;
                 }
             } catch (const std::exception& e) {
@@ -51,7 +64,7 @@ public:
     int rateLimit_;
     
     ioc::gaia::GaiaClient onlineClient_;
-    std::unique_ptr<ioc_gaialib::GaiaCatalog> unifiedCatalog_;
+    std::unique_ptr<ioc::gaia::Mag18CatalogV2> mag18Catalog_;
 };
 
 GaiaClient::GaiaClient(bool useMag18, const std::string& mag18Path)
@@ -94,14 +107,13 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryRegion(
     try {
         // Usa catalogo locale se disponibile e magnitudine compatibile
         if (pImpl_->localCatalogAvailable_ && 
-            pImpl_->unifiedCatalog_ && 
+            pImpl_->mag18Catalog_ && 
             params.maxMagnitude <= 18.0) {
             
-            auto gaiaStars = pImpl_->unifiedCatalog_->queryCone(
+            auto gaiaStars = pImpl_->mag18Catalog_->queryCone(
                 params.center.getRightAscension(),
                 params.center.getDeclination(),
-                params.radiusDegrees,
-                params.maxResults
+                params.radiusDegrees
             );
             
             for (const auto& gaiaStar : gaiaStars) {
@@ -142,8 +154,8 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryRegion(
 std::shared_ptr<core::Star> GaiaClient::queryById(long long gaiaId) {
     try {
         // Prova prima catalogo locale
-        if (pImpl_->localCatalogAvailable_ && pImpl_->unifiedCatalog_) {
-            auto gaiaStarOpt = pImpl_->unifiedCatalog_->queryStar(
+        if (pImpl_->localCatalogAvailable_ && pImpl_->mag18Catalog_) {
+            auto gaiaStarOpt = pImpl_->mag18Catalog_->queryBySourceId(
                 static_cast<uint64_t>(gaiaId)
             );
             
@@ -153,7 +165,7 @@ std::shared_ptr<core::Star> GaiaClient::queryById(long long gaiaId) {
         }
         
         // Fallback a query online
-        std::vector<uint64_t> ids = {static_cast<uint64_t>(gaiaId)};
+        std::vector<int64_t> ids = {static_cast<int64_t>(gaiaId)};
         auto gaiaStars = pImpl_->onlineClient_.queryBySourceIds(ids);
         
         if (!gaiaStars.empty()) {
@@ -174,9 +186,9 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryBox(
     double maxMagnitude) {
     
     try {
-        // Usa query box di IOC_GaiaLib se disponibile
+        // Usa query cone di catalogo locale se disponibile
         if (pImpl_->localCatalogAvailable_ && 
-            pImpl_->unifiedCatalog_ && 
+            pImpl_->mag18Catalog_ && 
             maxMagnitude <= 18.0) {
             
             double raMin = center.getRightAscension() - widthDeg / 2.0;
@@ -186,11 +198,10 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryBox(
             
             // Approssima con cone search
             double radius = std::sqrt(widthDeg * widthDeg + heightDeg * heightDeg) / 2.0;
-            auto gaiaStars = pImpl_->unifiedCatalog_->queryCone(
+            auto gaiaStars = pImpl_->mag18Catalog_->queryCone(
                 center.getRightAscension(),
                 center.getDeclination(),
-                radius,
-                10000
+                radius
             );
             
             std::vector<std::shared_ptr<core::Star>> boxStars;
@@ -252,12 +263,10 @@ bool GaiaClient::isLocalCatalogAvailable() const {
 GaiaClient::CatalogStats GaiaClient::getStatistics() const {
     CatalogStats stats;
     
-    if (pImpl_->unifiedCatalog_) {
-        auto catalogStats = pImpl_->unifiedCatalog_->getStatistics();
-        stats.totalStars = catalogStats.total_stars;
-        stats.magLimit = catalogStats.mag_limit;
+    if (pImpl_->localCatalogAvailable_) {
+        stats.totalStars = pImpl_->mag18Catalog_->getTotalStars();
+        stats.magLimit = 18.0; // Mag18 catalog limit
         stats.isOnline = false;
-        stats.cacheHitsMisses = catalogStats.cache_hits_misses;
     } else {
         stats.isOnline = true;
     }
