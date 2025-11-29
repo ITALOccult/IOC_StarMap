@@ -55,6 +55,9 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryRegion(
     auto gaiaStars = catalog.queryCone(qp);
     
     for (const auto& gs : gaiaStars) {
+        // Salta stelle con magnitudine non valida (0 o negativa)
+        if (gs.phot_g_mean_mag <= 0) continue;
+        
         auto star = std::make_shared<core::Star>();
         star->setGaiaId(gs.source_id);
         star->setCoordinates(core::EquatorialCoordinates(gs.ra, gs.dec));
@@ -69,6 +72,20 @@ std::vector<std::shared_ptr<core::Star>> GaiaClient::queryRegion(
         std::string designation = gs.getDesignation();
         if (!designation.empty()) {
             star->setName(designation);
+        }
+        
+        // Estrai numero SAO se disponibile
+        if (!gs.sao_designation.empty()) {
+            // sao_designation è tipo "SAO 123456" o solo "123456"
+            std::string saoStr = gs.sao_designation;
+            // Rimuovi prefisso "SAO " se presente
+            if (saoStr.substr(0, 4) == "SAO ") {
+                saoStr = saoStr.substr(4);
+            }
+            try {
+                int saoNum = std::stoi(saoStr);
+                star->setSAONumber(saoNum);
+            } catch (...) {}
         }
         
         stars.push_back(star);

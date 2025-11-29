@@ -1,0 +1,44 @@
+{
+    "_comment": "Carta di DETTAGLIO - M31 Galassia di Andromeda",
+    "_description": "Campo 3° per oculare a basso ingrandimento",
+    
+    "title": "Detail Chart - M31 Andromeda Galaxy",
+    "subtitle": "Campo: 3° - Magnitudine ≤ 14.0",
+    
+    "centerRA": 10.68,
+    "centerDec": 41.27,
+    "fieldRadius": 3.0,
+    
+    "width": 1200,
+    "height": 1200,
+    "pngDensity": 200,
+    "maxMagnitude": 14.0,
+    
+    "projection": "gnomonic",
+    
+    "showGrid": true,
+    "gridInterval": 0.5,
+    
+    "showConstellationLines": false,
+    "showConstellationBoundaries": false,
+    
+    "showStarLabels": false,
+    "showSAONumbers": false,
+    
+    "showBorder": true,
+    "showScaleBar": true,
+    "showNorthArrow": true,
+    "showLegend": true,
+    
+    "backgroundColor": "#ffffff",
+    "starColor": "#000000",
+    "gridColor": "#cccccc",
+    "titleColor": "#000000",
+    "useStarColors": false,
+    "printable": true,
+    
+    "starSizeMultiplier": 0.5,
+    
+    "outputFormat": "png",
+    "outputPath": "m31_detail"
+}

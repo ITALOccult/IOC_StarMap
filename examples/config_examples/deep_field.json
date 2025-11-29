@@ -1,0 +1,31 @@
+{
+    "_comment": "Carta personalizzata - Regione della Nebulosa Nord America (senza label)",
+    "title": "North America Nebula Region",
+    "subtitle": "Cygnus - NGC 7000",
+    
+    "centerRA": 314.0,
+    "centerDec": 44.0,
+    "fieldRadius": 8.0,
+    
+    "width": 1000,
+    "height": 1000,
+    "minMagnitude": -2.0,
+    "maxMagnitude": 10.0,
+    
+    "projection": "gnomonic",
+    
+    "showGrid": false,
+    "showConstellationLines": false,
+    "showStarLabels": false,
+    "showLegend": false,
+    
+    "backgroundColor": "#000008",
+    "borderWidth": 0,
+    
+    "starSizeMultiplier": 0.8,
+    "starBaseSize": 1.5,
+    "colorByTemperature": true,
+    
+    "outputFormat": "png",
+    "outputPath": "north_america_nebula_region"
+}

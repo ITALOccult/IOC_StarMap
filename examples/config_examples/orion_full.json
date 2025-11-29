@@ -1,0 +1,56 @@
+{
+    "_comment": "Carta di Orione con tutte le opzioni",
+    "title": "ORION - Il Cacciatore",
+    "subtitle": "Gaia DR3 Catalog - Stelle fino a mag 7.0",
+    "constellation": "Orion",
+    
+    "centerRA": 85.0,
+    "centerDec": 0.0,
+    "fieldRadius": 20.0,
+    
+    "width": 1600,
+    "height": 1200,
+    "minMagnitude": -2.0,
+    "maxMagnitude": 7.0,
+    
+    "projection": "gnomonic",
+    
+    "showGrid": true,
+    "gridSpacing": 5.0,
+    "gridColor": "#334466",
+    "gridOpacity": 0.4,
+    
+    "showConstellationLines": true,
+    "constellationLineColor": "#88aacc",
+    "constellationLineWidth": 2.0,
+    
+    "showStarLabels": true,
+    "labelMinMagnitude": 3.5,
+    "labelFont": "Helvetica",
+    "labelFontSize": 11,
+    "labelColor": "#ccddff",
+    
+    "showLegend": true,
+    "legendPosition": "bottom-left",
+    
+    "backgroundColor": "#05051a",
+    "borderColor": "#5588bb",
+    "borderWidth": 3.0,
+    
+    "starSizeMultiplier": 1.5,
+    "starBaseSize": 3.0,
+    "colorByTemperature": true,
+    
+    "outputFormat": "png",
+    "outputPath": "orion_full",
+    
+    "namedStars": [
+        {"name": "Betelgeuse", "ra": 88.79, "dec": 7.41, "labelOffset": [15, -10]},
+        {"name": "Rigel", "ra": 78.63, "dec": -8.20, "labelOffset": [10, 12]},
+        {"name": "Bellatrix", "ra": 81.28, "dec": 6.35, "labelOffset": [-50, 0]},
+        {"name": "Mintaka", "ra": 83.00, "dec": -0.30, "labelOffset": [8, -8]},
+        {"name": "Alnilam", "ra": 84.05, "dec": -1.20, "labelOffset": [8, -8]},
+        {"name": "Alnitak", "ra": 85.19, "dec": -1.94, "labelOffset": [8, 10]},
+        {"name": "Saiph", "ra": 86.94, "dec": -9.67, "labelOffset": [10, 0]}
+    ]
+}

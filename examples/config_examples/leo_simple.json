@@ -1,0 +1,17 @@
+{
+    "_comment": "Configurazione semplice per carta del Leone",
+    "title": "LEO - Il Leone",
+    "subtitle": "Gaia DR3 Catalog",
+    "constellation": "Leo",
+    
+    "centerRA": 165.0,
+    "centerDec": 15.0,
+    "fieldRadius": 25.0,
+    
+    "width": 1200,
+    "height": 1200,
+    "maxMagnitude": 6.5,
+    
+    "outputFormat": "png",
+    "outputPath": "leo_simple"
+}

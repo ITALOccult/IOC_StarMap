@@ -16,8 +16,6 @@ find_package(ZLIB REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(nlohmann_json 3.2.0)
 find_package(OpenMP)
-
-# Find IOC_GaiaLib
 find_package(ioc_gaialib REQUIRED)
 
 if(NOT nlohmann_json_FOUND)
@@ -49,6 +47,8 @@ set(STARMAP_SOURCES
     src/map/Projection.cpp
     src/map/MapRenderer.cpp
     src/map/GridRenderer.cpp
+    src/map/ChartGenerator.cpp
+    src/map/ConstellationData.cpp
     src/config/ConfigurationLoader.cpp
     src/config/JSONConfigLoader.cpp
     src/utils/HttpClient.cpp
@@ -65,6 +65,8 @@ set(STARMAP_HEADERS
     include/starmap/map/Projection.h
     include/starmap/map/MapRenderer.h
     include/starmap/map/GridRenderer.h
+    include/starmap/map/ChartGenerator.h
+    include/starmap/map/ConstellationData.h
     include/starmap/config/ConfigurationLoader.h
     include/starmap/config/JSONConfigLoader.h
     include/starmap/utils/HttpClient.h

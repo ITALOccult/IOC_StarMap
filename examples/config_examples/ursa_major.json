@@ -1,0 +1,46 @@
+{
+    "_comment": "Carta dell'Orsa Maggiore (Big Dipper)",
+    "title": "URSA MAJOR",
+    "subtitle": "Grande Carro - Gaia DR3",
+    "constellation": "UrsaMajor",
+    
+    "centerRA": 180.0,
+    "centerDec": 55.0,
+    "fieldRadius": 30.0,
+    
+    "width": 1400,
+    "height": 1000,
+    "maxMagnitude": 6.0,
+    
+    "projection": "stereographic",
+    
+    "showGrid": true,
+    "gridSpacing": 10.0,
+    "gridColor": "#2a4a6a",
+    
+    "showConstellationLines": true,
+    "constellationLineColor": "#77aadd",
+    
+    "showStarLabels": true,
+    "labelMinMagnitude": 4.0,
+    
+    "showLegend": true,
+    
+    "backgroundColor": "#080818",
+    
+    "starSizeMultiplier": 1.3,
+    "colorByTemperature": true,
+    
+    "outputFormat": "png",
+    "outputPath": "ursa_major",
+    
+    "namedStars": [
+        {"name": "Dubhe", "ra": 165.93, "dec": 61.75},
+        {"name": "Merak", "ra": 165.46, "dec": 56.38},
+        {"name": "Phecda", "ra": 178.46, "dec": 53.69},
+        {"name": "Megrez", "ra": 183.86, "dec": 57.03},
+        {"name": "Alioth", "ra": 193.51, "dec": 55.96},
+        {"name": "Mizar", "ra": 200.98, "dec": 54.93},
+        {"name": "Alkaid", "ra": 206.88, "dec": 49.31}
+    ]
+}

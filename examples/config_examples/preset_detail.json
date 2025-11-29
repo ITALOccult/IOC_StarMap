@@ -1,0 +1,13 @@
+{
+  "title": "Detail Chart (Preset)",
+  "preset": "detail",
+  "centerRA": 0.0,
+  "centerDec": 0.0,
+  "fieldRadius": 2.0,
+  "maxMagnitude": 16.0,
+  "showSAONumbers": false,
+  "showConstellationBoundaries": false,
+  "gridInterval": 0.5,
+  "outputFormat": "png",
+  "outputPath": "detail_chart"
+}

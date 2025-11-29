@@ -1,0 +1,47 @@
+{
+    "_comment": "Carta di PUNTAMENTO - M31 Galassia di Andromeda",
+    "_description": "Campo largo, stampabile, per individuare M31",
+    
+    "title": "Finder Chart - M31 Andromeda Galaxy",
+    "subtitle": "Campo: 30° - Magnitudine ≤ 8.0",
+    
+    "centerRA": 10.68,
+    "centerDec": 41.27,
+    "fieldRadius": 30.0,
+    
+    "width": 1200,
+    "height": 1200,
+    "pngDensity": 200,
+    "maxMagnitude": 8.0,
+    
+    "projection": "gnomonic",
+    
+    "showGrid": true,
+    "gridInterval": 5.0,
+    
+    "showConstellationLines": true,
+    "showConstellationBoundaries": true,
+    
+    "showStarLabels": true,
+    "labelMagnitudeLimit": 4.5,
+    
+    "showSAONumbers": true,
+    "saoMagnitudeLimit": 6.5,
+    
+    "showBorder": true,
+    "showScaleBar": true,
+    "showNorthArrow": true,
+    "showLegend": true,
+    
+    "backgroundColor": "#ffffff",
+    "starColor": "#000000",
+    "gridColor": "#aaaaaa",
+    "constellationLineColor": "#555555",
+    "labelColor": "#333333",
+    "titleColor": "#000000",
+    "useStarColors": false,
+    "printable": true,
+    
+    "outputFormat": "png",
+    "outputPath": "m31_finder"
+}

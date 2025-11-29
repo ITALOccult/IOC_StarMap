@@ -1,0 +1,14 @@
+{
+  "title": "Finder Chart (Preset)",
+  "preset": "finder",
+  "centerRA": 0.0,
+  "centerDec": 0.0,
+  "fieldRadius": 25.0,
+  "maxMagnitude": 8.0,
+  "showSAONumbers": true,
+  "saoMagnitudeLimit": 7.0,
+  "showConstellationBoundaries": true,
+  "gridInterval": 5.0,
+  "outputFormat": "png",
+  "outputPath": "finder_chart"
+}

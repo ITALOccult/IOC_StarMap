@@ -1,0 +1,49 @@
+{
+    "_comment": "Carta di DETTAGLIO per telescopio - M42 Nebulosa di Orione",
+    "_description": "Carta stretta per identificare stelle deboli, stampabile, mag 16",
+    
+    "title": "Detail Chart - M42 Orion Nebula",
+    "subtitle": "Campo: 2° - Magnitudine ≤ 16.0",
+    
+    "centerRA": 83.82,
+    "centerDec": -5.39,
+    "fieldRadius": 2.0,
+    
+    "width": 1200,
+    "height": 1200,
+    "pngDensity": 200,
+    "maxMagnitude": 16.0,
+    
+    "projection": "gnomonic",
+    
+    "showGrid": true,
+    "gridInterval": 0.5,
+    
+    "showConstellationLines": false,
+    "showConstellationBoundaries": false,
+    
+    "showStarLabels": false,
+    "showSAONumbers": false,
+    
+    "showBorder": true,
+    "showScaleBar": true,
+    "showNorthArrow": true,
+    "showLegend": true,
+    
+    "backgroundColor": "#ffffff",
+    "starColor": "#000000",
+    "gridColor": "#cccccc",
+    "labelColor": "#444444",
+    "titleColor": "#000000",
+    "borderColor": "#000000",
+    "useStarColors": false,
+    "gridOpacity": 0.5,
+    "printable": true,
+    
+    "starSizeMultiplier": 0.6,
+    "minStarSize": 0.3,
+    "maxStarSize": 4.0,
+    
+    "outputFormat": "png",
+    "outputPath": "m42_detail"
+}
