@@ -1,18 +1,18 @@
 {
-    "_comment": "Carta di PUNTAMENTO per telescopio - M42 Nebulosa di Orione",
-    "_description": "Carta larga per identificare il campo, stampabile, con SAO e confini",
+    "_comment": "Carta di AVVICINAMENTO per occultazioni asteroidali - Stile IAU",
+    "_description": "Campo largo per localizzare la regione di occultazione, stile professionale IAU",
     
-    "title": "Finder Chart - M42 Orion Nebula",
-    "subtitle": "Campo: 25° - Magnitudine ≤ 8.0",
+    "title": "Asteroid Occultation - Approach Chart (IAU Style)",
+    "subtitle": "Campo: 20° - Magnitudine: ≤ 10.0",
     
-    "centerRA": 83.82,
-    "centerDec": -5.39,
-    "fieldRadius": 25.0,
+    "centerRA": 0.0,
+    "centerDec": 0.0,
+    "fieldRadius": 20.0,
     
     "width": 2400,
     "height": 2400,
     "pngDensity": 300,
-    "maxMagnitude": 7.5,
+    "maxMagnitude": 10.0,
     
     "projection": "gnomonic",
     
@@ -26,7 +26,7 @@
     "labelMagnitudeLimit": 5.0,
     
     "showSAONumbers": true,
-    "saoMagnitudeLimit": 7.0,
+    "saoMagnitudeLimit": 8.0,
     
     "showBorder": true,
     "showScaleBar": true,
@@ -42,14 +42,14 @@
     "titleColor": "#000000",
     "borderColor": "#000000",
     "useStarColors": false,
+    "printable": true,
     "gridOpacity": 0.7,
     "borderWidth": 2.0,
-    "printable": true,
     
-    "starSizeMultiplier": 1.2,
-    "minStarSize": 0.8,
-    "maxStarSize": 6.0,
+    "starSizeMultiplier": 1.0,
+    "minStarSize": 0.6,
+    "maxStarSize": 5.0,
     
     "outputFormat": "png",
-    "outputPath": "m42_finder"
+    "outputPath": "occultation_approach_iau"
 }

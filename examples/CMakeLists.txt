@@ -49,6 +49,15 @@ else()
     target_link_libraries(example_programmatic PRIVATE "/opt/homebrew/opt/libomp/lib/libomp.dylib")
 endif()
 
+# Esempio carte occultazione
+add_executable(occultation_chart occultation_chart.cpp)
+target_link_libraries(occultation_chart PRIVATE starmap)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(occultation_chart PRIVATE OpenMP::OpenMP_CXX)
+else()
+    target_link_libraries(occultation_chart PRIVATE "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+endif()
+
 # Installa esempi
 install(TARGETS 
     example_basic 
@@ -56,6 +65,7 @@ install(TARGETS
     example_programmatic 
     leo_chart
     generate_chart
+    occultation_chart
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/examples
 )
 
@@ -65,4 +75,10 @@ install(FILES
     config_examples/andromeda.json
     config_examples/custom.json
     DESTINATION ${CMAKE_INSTALL_DATADIR}/starmap/examples
+)
+
+# Installa esempi occultazione
+install(FILES 
+    occultation_examples/example_eros.json
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/starmap/examples/occultation
 )

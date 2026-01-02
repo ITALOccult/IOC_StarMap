@@ -9,10 +9,10 @@
     "centerDec": 41.27,
     "fieldRadius": 30.0,
     
-    "width": 1200,
-    "height": 1200,
-    "pngDensity": 200,
-    "maxMagnitude": 8.0,
+    "width": 2400,
+    "height": 2400,
+    "pngDensity": 300,
+    "maxMagnitude": 7.5,
     
     "projection": "gnomonic",
     
@@ -35,12 +35,20 @@
     
     "backgroundColor": "#ffffff",
     "starColor": "#000000",
-    "gridColor": "#aaaaaa",
-    "constellationLineColor": "#555555",
-    "labelColor": "#333333",
+    "gridColor": "#888888",
+    "constellationLineColor": "#333333",
+    "constellationBoundaryColor": "#666666",
+    "labelColor": "#000000",
     "titleColor": "#000000",
+    "borderColor": "#000000",
     "useStarColors": false,
     "printable": true,
+    "gridOpacity": 0.7,
+    "borderWidth": 2.0,
+    
+    "starSizeMultiplier": 1.2,
+    "minStarSize": 0.8,
+    "maxStarSize": 6.0,
     
     "outputFormat": "png",
     "outputPath": "m31_finder"

@@ -1,0 +1,114 @@
+{
+  "event_id": "2025-12-15-433-Eros",
+  "source": "IOC",
+  "data_version": "1.0",
+  "description": "Occultazione di una stella da parte dell'asteroide (433) Eros",
+  
+  "target_star": {
+    "catalog_id": "Gaia DR3 1234567890123456",
+    "ra": 152.5678,
+    "dec": 23.4567,
+    "magnitude": 11.2,
+    "bv_color": 0.65,
+    "spectral_type": "G5",
+    "sao_number": 81234,
+    "proper_name": "",
+    "notes": "Stella target dell'occultazione"
+  },
+  
+  "asteroid": {
+    "name": "(433) Eros",
+    "number": 433,
+    "designation": "",
+    "ra": 152.5680,
+    "dec": 23.4568,
+    "magnitude": 12.5,
+    "diameter_km": 16.8,
+    "velocity_arcsec_per_hour": 45.2,
+    "position_angle": 135.0,
+    "notes": "Asteroide Near-Earth di tipo S"
+  },
+  
+  "circumstances": {
+    "event_time": "2025-12-15T22:34:12.5Z",
+    "duration_seconds": 8.3,
+    "shadow_width_km": 16.8,
+    "shadow_speed_km_s": 12.4,
+    "position_angle": 135.0,
+    "uncertainty_along_track_km": 5.2,
+    "uncertainty_cross_track_km": 12.8,
+    "magnitude_drop": 0.8,
+    "probability": 0.85,
+    "notes": "Condizioni favorevoli, Luna assente"
+  },
+  
+  "observation_site": {
+    "name": "Osservatorio Monte Porzio",
+    "latitude": 41.8136,
+    "longitude": 12.7158,
+    "altitude_m": 450,
+    "timezone": "Europe/Rome",
+    "local_event_time": "2025-12-15T23:34:12.5",
+    "azimuth": 185.5,
+    "elevation": 52.3,
+    "air_mass": 1.28,
+    "moon_distance_deg": 145.2,
+    "sun_altitude_deg": -35.8,
+    "notes": "Notte astronomica, condizioni ottime"
+  },
+  
+  "shadow_path": {
+    "center_line": [
+      {
+        "latitude": 40.5,
+        "longitude": 10.2,
+        "location_name": "Mar Tirreno"
+      },
+      {
+        "latitude": 41.8,
+        "longitude": 12.7,
+        "location_name": "Roma"
+      },
+      {
+        "latitude": 43.1,
+        "longitude": 15.2,
+        "location_name": "Adriatico"
+      }
+    ],
+    "northern_limit": [
+      {
+        "latitude": 40.6,
+        "longitude": 10.2
+      },
+      {
+        "latitude": 41.9,
+        "longitude": 12.7
+      },
+      {
+        "latitude": 43.2,
+        "longitude": 15.2
+      }
+    ],
+    "southern_limit": [
+      {
+        "latitude": 40.4,
+        "longitude": 10.2
+      },
+      {
+        "latitude": 41.7,
+        "longitude": 12.7
+      },
+      {
+        "latitude": 43.0,
+        "longitude": 15.2
+      }
+    ]
+  },
+  
+  "references": [
+    "https://www.asteroidoccultation.com/observations/Results/2025/",
+    "https://occult.iota-es.de/event/2025-12-15-433"
+  ],
+  
+  "notes": "Evento favorevole per l'Italia centrale. L'asteroide Eros è ben conosciuto e la previsione è affidabile. Consigliato uso di telescopi da almeno 20cm per la stella di mag 11.2. Registrare i tempi con precisione al centesimo di secondo."
+}

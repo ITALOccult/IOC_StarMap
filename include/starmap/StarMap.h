@@ -28,6 +28,10 @@
 #include "starmap/config/ConfigurationLoader.h"
 #include "starmap/config/JSONConfigLoader.h"
 
+// Occultation charts
+#include "starmap/occultation/OccultationData.h"
+#include "starmap/occultation/OccultationChartBuilder.h"
+
 namespace starmap {
 
 /**

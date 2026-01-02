@@ -52,6 +52,8 @@ set(STARMAP_SOURCES
     src/config/ConfigurationLoader.cpp
     src/config/JSONConfigLoader.cpp
     src/utils/HttpClient.cpp
+    src/occultation/OccultationData.cpp
+    src/occultation/OccultationChartBuilder.cpp
 )
 
 # Header files
@@ -70,6 +72,8 @@ set(STARMAP_HEADERS
     include/starmap/config/ConfigurationLoader.h
     include/starmap/config/JSONConfigLoader.h
     include/starmap/utils/HttpClient.h
+    include/starmap/occultation/OccultationData.h
+    include/starmap/occultation/OccultationChartBuilder.h
     include/starmap/StarMap.h
 )
 

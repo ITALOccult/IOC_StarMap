@@ -1,13 +1,13 @@
 {
-    "_comment": "Carta di PUNTAMENTO per telescopio - M42 Nebulosa di Orione",
-    "_description": "Carta larga per identificare il campo, stampabile, con SAO e confini",
+    "_comment": "Carta di AVVICINAMENTO stile IAU - International Astronomical Union",
+    "_description": "Carta stampabile professionale simile alle carte IAU, ottimizzata per stampa e uso sul campo",
     
-    "title": "Finder Chart - M42 Orion Nebula",
-    "subtitle": "Campo: 25° - Magnitudine ≤ 8.0",
+    "title": "IAU Style Finder Chart",
+    "subtitle": "Campo: 30° - Magnitudine limite: 7.5",
     
-    "centerRA": 83.82,
-    "centerDec": -5.39,
-    "fieldRadius": 25.0,
+    "centerRA": 0.0,
+    "centerDec": 0.0,
+    "fieldRadius": 30.0,
     
     "width": 2400,
     "height": 2400,
@@ -23,10 +23,10 @@
     "showConstellationBoundaries": true,
     
     "showStarLabels": true,
-    "labelMagnitudeLimit": 5.0,
+    "labelMagnitudeLimit": 4.0,
     
     "showSAONumbers": true,
-    "saoMagnitudeLimit": 7.0,
+    "saoMagnitudeLimit": 6.5,
     
     "showBorder": true,
     "showScaleBar": true,
@@ -42,14 +42,14 @@
     "titleColor": "#000000",
     "borderColor": "#000000",
     "useStarColors": false,
+    "printable": true,
     "gridOpacity": 0.7,
     "borderWidth": 2.0,
-    "printable": true,
     
     "starSizeMultiplier": 1.2,
     "minStarSize": 0.8,
     "maxStarSize": 6.0,
     
     "outputFormat": "png",
-    "outputPath": "m42_finder"
+    "outputPath": "iau_finder_chart"
 }
