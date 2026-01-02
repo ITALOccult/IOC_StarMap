@@ -1,0 +1,59 @@
+{
+    "_comment": "Carta DETTAGLIATA per occultazione - Stile Betelgeuse",
+    "_description": "Mappa dettagliata del percorso di occultazione, formato panoramico per stampa, basata su esempio maps-betelgeuse-AC-white.jpg",
+    
+    "title": "Asteroid Occultation - Detail Chart",
+    "subtitle": "Percorso dettagliato - Campo: 3°",
+    
+    "centerRA": 0.0,
+    "centerDec": 0.0,
+    "fieldRadius": 3.0,
+    
+    "width": 2162,
+    "height": 1184,
+    "pngDensity": 300,
+    "maxMagnitude": 16.0,
+    
+    "projection": "gnomonic",
+    
+    "showGrid": true,
+    "gridInterval": 0.25,
+    
+    "showConstellationLines": false,
+    "showConstellationBoundaries": false,
+    
+    "showStarLabels": true,
+    "labelMagnitudeLimit": 10.0,
+    
+    "showSAONumbers": true,
+    "saoMagnitudeLimit": 14.0,
+    
+    "showBorder": true,
+    "showScaleBar": true,
+    "showNorthArrow": true,
+    "showLegend": true,
+    
+    "backgroundColor": "#ffffff",
+    "starColor": "#000000",
+    "gridColor": "#cccccc",
+    "labelColor": "#000000",
+    "titleColor": "#000000",
+    "borderColor": "#000000",
+    "useStarColors": false,
+    "printable": true,
+    "gridOpacity": 0.5,
+    "borderWidth": 2.0,
+    
+    "starSizeMultiplier": 0.7,
+    "minStarSize": 0.4,
+    "maxStarSize": 4.0,
+    
+    "_aspectRatio": "16:9 panoramic format like Betelgeuse example",
+    "_gridNotes": "Griglia fine (0.25°) per posizionamento preciso durante occultazione",
+    "_pathOverlay": "Il percorso dell'asteroide va disegnato in ROSSO durante post-processing",
+    "_saoNumbers": "Numeri SAO mostrati per tutte le stelle fino a mag 14.0 per identificazione precisa",
+    "_pathColor": "#FF0000 (rosso) per massima visibilità",
+    
+    "outputFormat": "png",
+    "outputPath": "occultation_detail"
+}

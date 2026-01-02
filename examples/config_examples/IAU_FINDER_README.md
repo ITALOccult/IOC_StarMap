@@ -73,6 +73,23 @@ Esempio pratico per M31, ora con qualità IAU.
 ### 4. `telescope_finder.json` - M42 Orione (Aggiornato)
 Esempio per M42, ottimizzato per telescopio.
 
+### 5. `occultation_detail_betelgeuse_style.json` - Carta Dettaglio Occultazione
+Mappa dettagliata in formato panoramico (16:9) per osservazione diretta dell'occultazione.
+
+**Parametri chiave:**
+- Formato: 2162×1184 px (panoramico come esempio Betelgeuse)
+- Campo: 2° × 1° (percorso dettagliato)
+- Magnitudine limite: 15.0 (stelle deboli visibili)
+- Griglia: 0.25° (posizionamento preciso)
+- SAO fino a mag 12.0
+
+**Uso:**
+```bash
+./generate_chart occultation_detail_betelgeuse_style.json
+```
+
+**Note:** Basata sul file di riferimento `maps-betelgeuse-AC-white.jpg`. Il percorso dell'asteroide va aggiunto in post-processing.
+
 ## Come Personalizzare una Carta IAU
 
 ### Esempio: Carta per Occultazione Asteroide
@@ -99,12 +116,13 @@ Esempio per M42, ottimizzato per telescopio.
 
 ## Confronto Tipi di Carta
 
-| Tipo | Campo | Mag Limite | SAO Limite | Uso |
-|------|-------|------------|------------|-----|
-| **IAU Finder** | 30° | 7.5 | 6.5 | Localizzazione generale |
-| **Occultation Approach** | 20° | 10.0 | 8.0 | Avvicinamento occultazione |
-| **Telescope Finder** | 25° | 7.5 | 7.0 | Puntamento telescopio |
-| **Detail Chart** | 2° | 16.0 | - | Campo dettagliato |
+| Tipo | Campo | Dimensioni | Mag Limite | SAO Limite | Griglia | Uso |
+|------|-------|------------|------------|------------|---------|-----|
+| **IAU Finder** | 30° | 2400×2400 | 7.5 | 6.5 | 5° | Localizzazione generale |
+| **Occultation Approach** | 20° | 2400×2400 | 10.0 | 8.0 | 5° | Avvicinamento occultazione |
+| **Telescope Finder** | 25° | 2400×2400 | 7.5 | 7.0 | 5° | Puntamento telescopio |
+| **Occultation Detail** | 2°×1° | 2162×1184 | 15.0 | 12.0 | 0.25° | Percorso dettagliato (stile Betelgeuse) |
+| **Detail Chart** | 2° | 1200×1200 | 16.0 | - | 0.5° | Campo dettagliato generico |
 
 ## Differenze Rispetto alle Carte Standard
 
