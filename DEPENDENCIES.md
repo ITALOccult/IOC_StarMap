@@ -52,6 +52,25 @@ Su Fedora/RHEL:
 sudo dnf install libcurl-devel
 ```
 
+## SQLite3
+
+Richiesto per il database locale di cross-match Gaia-SAO.
+
+Su macOS (con Homebrew):
+```bash
+brew install sqlite3
+```
+
+Su Ubuntu/Debian:
+```bash
+sudo apt-get install libsqlite3-dev
+```
+
+Su Fedora/RHEL:
+```bash
+sudo dnf install sqlite-devel
+```
+
 ## nlohmann/json
 
 La libreria può utilizzare una versione di sistema o quella bundled.
@@ -117,6 +136,7 @@ sudo apt-get install -y \
     libcurl4-openssl-dev \
     libxml2-dev \
     zlib1g-dev \
+    libsqlite3-dev \
     nlohmann-json3-dev
 
 # 2. Installa IOC_GaiaLib

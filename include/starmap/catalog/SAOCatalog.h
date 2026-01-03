@@ -2,6 +2,7 @@
 #define STARMAP_SAO_CATALOG_H
 
 #include "starmap/core/CelestialObject.h"
+#include "GaiaSAODatabase.h"
 #include <memory>
 #include <string>
 #include <optional>
@@ -17,7 +18,11 @@ namespace catalog {
  */
 class SAOCatalog {
 public:
-    SAOCatalog();
+    /**
+     * @brief Costruttore con path opzionale al database locale
+     * @param localDbPath Path al database Gaia-SAO locale (default: "gaia_sao_xmatch.db")
+     */
+    explicit SAOCatalog(const std::string& localDbPath = "gaia_sao_xmatch.db");
     ~SAOCatalog();
 
     /**
@@ -64,9 +69,22 @@ public:
     /**
      * @brief Arricchisce una stella GAIA con il numero SAO
      * @param star Puntatore a stella da arricchire
-     * @return true se numero SAO trovato e aggiunto
+    /**
+     * @brief Verifica se database locale è disponibile
+     * @return true se database locale può essere usato
      */
-    bool enrichWithSAO(std::shared_ptr<core::Star> star);
+    bool hasLocalDatabase() const;
+
+    /**
+     * @brief Ottieni statistiche del database locale
+     * @return Stringa con statistiche o messaggio errore
+     */
+    std::string getDatabaseStatistics() const;
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> pImpl_;
+    std::unique_ptr<GaiaSAODatabase> localDatabasered_ptr<core::Star> star);
 
 private:
     class Impl;

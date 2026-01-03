@@ -14,6 +14,7 @@ option(BUILD_TESTS "Build tests" OFF)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibXml2 REQUIRED)
+find_package(SQLite3 REQUIRED)
 find_package(nlohmann_json 3.2.0)
 find_package(OpenMP)
 find_package(ioc_gaialib REQUIRED)
@@ -43,6 +44,7 @@ set(STARMAP_SOURCES
     src/catalog/GaiaClient.cpp
     src/catalog/SAOCatalog.cpp
     src/catalog/CatalogManager.cpp
+    src/catalog/GaiaSAODatabase.cpp
     src/map/MapConfiguration.cpp
     src/map/Projection.cpp
     src/map/MapRenderer.cpp
@@ -62,9 +64,9 @@ set(STARMAP_HEADERS
     include/starmap/core/CelestialObject.h
     include/starmap/catalog/GaiaClient.h
     include/starmap/catalog/SAOCatalog.h
-    include/starmap/catalog/CatalogManager.h
+    include/starmap/catalog/GaiaSAODatabase.h
     include/starmap/map/MapConfiguration.h
-    include/starmap/map/Projection.h
+    include/starmap/map/Projectionh
     include/starmap/map/MapRenderer.h
     include/starmap/map/GridRenderer.h
     include/starmap/map/ChartGenerator.h
@@ -93,6 +95,7 @@ target_link_libraries(starmap
         ${CURL_LIBRARIES}
         ZLIB::ZLIB
         LibXml2::LibXml2
+        SQLite::SQLite3
 )
 
 if(OpenMP_CXX_FOUND)

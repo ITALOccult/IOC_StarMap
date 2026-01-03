@@ -58,6 +58,15 @@ else()
     target_link_libraries(occultation_chart PRIVATE "/opt/homebrew/opt/libomp/lib/libomp.dylib")
 endif()
 
+# Test database SAO
+add_executable(test_sao_database test_sao_database.cpp)
+target_link_libraries(test_sao_database PRIVATE starmap)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(test_sao_database PRIVATE OpenMP::OpenMP_CXX)
+else()
+    target_link_libraries(test_sao_database PRIVATE "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+endif()
+
 # Installa esempi
 install(TARGETS 
     example_basic 
@@ -66,6 +75,7 @@ install(TARGETS
     leo_chart
     generate_chart
     occultation_chart
+    test_sao_database
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/examples
 )
 

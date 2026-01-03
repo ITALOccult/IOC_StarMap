@@ -9,7 +9,7 @@ Una libreria C++ professionale per la generazione di mappe celesti di alta quali
 ## ✨ Caratteristiche
 
 - 🌌 **Query GAIA DR3**: Accesso diretto al catalogo GAIA tramite servizio TAP/ADQL
-- 🔢 **Numeri SAO**: Cross-matching automatico con catalogo SAO tramite VizieR/SIMBAD
+- 🔢 **Numeri SAO**: Cross-matching automatico con database locale o query online (VizieR/SIMBAD)
 - 🗺️ **Proiezioni Multiple**: Stereografica, Gnomica, Ortografica, Mercatore, Azimutale
 - 🎨 **Colori Spettrali**: Rendering stelle con colori basati su tipo spettrale/indice colore
 - 📐 **Griglia Configurabile**: Griglia coordinate RA/Dec personalizzabile
@@ -237,9 +237,13 @@ cmake --build . --target example_basic
 
 ### SAO (Smithsonian Astrophysical Observatory)
 - ~259,000 stelle con mag < 9
-- Cross-matching automatico via VizieR
-- Query SIMBAD per ID alternativi
+- **Database locale SQLite** per lookup velocissimo (< 0.1 ms)
+- Fallback automatico a query online VizieR/SIMBAD
+- Cross-matching Gaia DR3 ↔ SAO
 - Numeri SAO storicamente importanti
+- Script Python per generare database: `scripts/build_gaia_sao_database.py`
+
+**Documentazione completa**: [docs/GAIA_SAO_DATABASE.md](docs/GAIA_SAO_DATABASE.md)
 
 ## ⚙️ API Principale
 

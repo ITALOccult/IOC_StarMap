@@ -1,8 +1,10 @@
 #include "starmap/catalog/SAOCatalog.h"
+#include "starmap/catalog/GaiaSAODatabase.h"
 #include "starmap/utils/HttpClient.h"
 #include <sstream>
 #include <cmath>
 #include <map>
+#include <iostream>
 
 namespace starmap {
 namespace catalog {
@@ -19,7 +21,17 @@ public:
     std::map<int, SAOEntry> localCache_; // Cache locale per performance
 };
 
-SAOCatalog::SAOCatalog() : pImpl_(std::make_unique<Impl>()) {}
+SAOCatalog::SAOCatalog(const std::string& localDbPath) 
+    : pImpl_(std::make_unique<Impl>())
+    , localDatabase_(std::make_unique<GaiaSAODatabase>(localDbPath)) {
+    
+    if (localDatabase_->isAvailable()) {
+        std::cout << "Gaia-SAO local database loaded successfully" << std::endl;
+        std::cout << localDatabase_->getStatistics() << std::endl;
+    } else {
+        std::cout << "Warning: Gaia-SAO local database not available. Using online queries only." << std::endl;
+    }
+}
 
 SAOCatalog::~SAOCatalog() = default;
 
@@ -169,23 +181,52 @@ bool SAOCatalog::loadLocalCatalog(const std::string& catalogPath) {
     
     // Per ora ritorna false
     return false;
-}
-
-bool SAOCatalog::enrichWithSAO(std::shared_ptr<core::Star> star) {
-    if (!star) return false;
-    
-    // Se già ha un numero SAO, non fare nulla
-    if (star->getSAONumber().has_value()) {
-        return true;
+}RIORITÀ 1: Prova con database locale usando Gaia ID
+    if (localDatabase_->isAvailable() && star->getGaiaId() > 0) {
+        auto sao = localDatabase_->findSAOByGaiaId(star->getGaiaId());
+        if (sao.has_value()) {
+            star->setSAONumber(sao.value());
+            return true;
+        }
     }
     
-    // Prova prima con GAIA ID se disponibile
+    // PRIORITÀ 2: Prova con database locale usando coordinate
+    if (localDatabase_->isAvailable()) {
+        auto sao = localDatabase_->findSAOByCoordinates(star->getCoordinates(), 5.0);
+        if (sao.has_value()) {
+            star->setSAONumber(sao.value());
+            return true;
+        }
+    }
+    
+    // FALLBACK 3: Query online SIMBAD se disponibile Gaia ID
     if (star->getGaiaId() > 0) {
         auto sao = querySIMBADForSAO(star->getGaiaId());
         if (sao.has_value()) {
             star->setSAONumber(sao.value());
             return true;
         }
+    }
+    
+    // FALLBACK 4: Query online VizieR con coordinate
+    auto sao = crossMatchVizieR(star->getCoordinates(), 5.0);
+    if (sao.has_value()) {
+        star->setSAONumber(sao.value());
+        return true;
+    }
+    
+    return false;
+}
+
+bool SAOCatalog::hasLocalDatabase() const {
+    return localDatabase_ && localDatabase_->isAvailable();
+}
+
+std::string SAOCatalog::getDatabaseStatistics() const {
+    if (!localDatabase_) {
+        return "Local database not initialized";
+    }
+    return localDatabase_->getStatistics()
     }
     
     // Altrimenti prova con coordinate
