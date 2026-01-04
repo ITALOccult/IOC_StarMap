@@ -178,6 +178,10 @@ struct OccultationChartConfig {
     // Visualizzazione
     double limitingMagnitude = 15.0; // Magnitudine limite
     bool showGrid = true;
+    double gridInterval = 1.0;
+    bool showConstellationLines = false;
+    bool showConstellationBoundaries = false;
+    bool showSAONumbers = false;
     bool showAsteroidPath = true;    // Mostra la traccia dell'asteroide
     bool showAsteroidPosition = true;// Evidenzia la posizione
     bool showTargetStar = true;      // Evidenzia la stella target

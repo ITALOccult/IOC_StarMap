@@ -135,6 +135,16 @@ public:
         const OccultationChartConfig* config = nullptr);
 
     /**
+     * @brief Genera e salva carta cercatrice
+     * @param filename Nome file output
+     * @param config Configurazione (opzionale)
+     * @return true se la generazione è riuscita
+     */
+    bool generateAndSaveFinderChart(
+        const std::string& filename,
+        const OccultationChartConfig* config = nullptr);
+
+    /**
      * @brief Genera tutte le carte standard per un evento
      * 
      * Genera:

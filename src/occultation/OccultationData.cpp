@@ -40,6 +40,9 @@ OccultationChartConfig OccultationChartConfig::getDefaultForType(ChartType type)
             config.limitingMagnitude = 12.0;
             config.pathDurationHours = 3.0;
             config.showGrid = true;
+            config.showConstellationLines = true;
+            config.showConstellationBoundaries = true;
+            config.showSAONumbers = true;
             config.showAsteroidPath = true;
             break;
             

@@ -177,14 +177,6 @@ std::optional<int> SAOCatalog::crossMatchVizieR(
     return std::nullopt;
 }
 
-bool SAOCatalog::loadLocalCatalog(const std::string& catalogPath) {
-    // TODO: Implementare caricamento da file locale
-    // Il catalogo SAO può essere scaricato da VizieR o altri fonti
-    // Formato tipico: CSV o FITS
-    
-    // Per ora ritorna false
-    return false;
-}
 
 bool SAOCatalog::enrichWithSAO(std::shared_ptr<core::Star> star) {
     if (!star) return false;
@@ -195,7 +187,7 @@ bool SAOCatalog::enrichWithSAO(std::shared_ptr<core::Star> star) {
     }
     
     // PRIORITÀ 1: Prova con database locale usando Gaia ID
-    if (localDatabase_->isAvailable() && star->getGaiaId() > 0) {
+    if (localDatabase_ && localDatabase_->isAvailable() && star->getGaiaId() > 0) {
         auto sao = localDatabase_->findSAOByGaiaId(star->getGaiaId());
         if (sao.has_value()) {
             star->setSAONumber(sao.value());
@@ -204,7 +196,7 @@ bool SAOCatalog::enrichWithSAO(std::shared_ptr<core::Star> star) {
     }
     
     // PRIORITÀ 2: Prova con database locale usando coordinate
-    if (localDatabase_->isAvailable()) {
+    if (localDatabase_ && localDatabase_->isAvailable()) {
         auto sao = localDatabase_->findSAOByCoordinates(star->getCoordinates(), 5.0);
         if (sao.has_value()) {
             star->setSAONumber(sao.value());

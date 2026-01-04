@@ -40,6 +40,7 @@ include_directories(
 
 # Source files
 set(STARMAP_SOURCES
+    src/StarMap.cpp
     src/core/Coordinates.cpp
     src/core/CelestialObject.cpp
     src/catalog/GaiaClient.cpp

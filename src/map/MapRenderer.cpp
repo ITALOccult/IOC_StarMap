@@ -3,6 +3,9 @@
 #include <cmath>
 #include <cstring>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "starmap/utils/stb_image_write.h"
+
 namespace starmap {
 namespace map {
 
@@ -29,14 +32,20 @@ uint32_t ImageBuffer::getPixel(int x, int y) const {
 }
 
 bool ImageBuffer::saveAsPNG(const std::string& filename) const {
-    // TODO: Implementare usando libreria stb_image_write o libpng
-    // Per ora ritorna false
-    return false;
+    if (data.empty() || width <= 0 || height <= 0) return false;
+    
+    // stbi_write_png(filename, w, h, comp, data, stride)
+    // format is RGBA, so comp = 4
+    int result = stbi_write_png(filename.c_str(), width, height, 4, data.data(), width * 4);
+    return result != 0;
 }
 
 bool ImageBuffer::saveAsJPEG(const std::string& filename, int quality) const {
-    // TODO: Implementare usando libreria stb_image_write o libjpeg
-    return false;
+    if (data.empty() || width <= 0 || height <= 0) return false;
+    
+    // stbi_write_jpg(filename, w, h, comp, data, quality)
+    int result = stbi_write_jpg(filename.c_str(), width, height, 4, data.data(), quality);
+    return result != 0;
 }
 
 // ============================================================================
@@ -196,14 +205,20 @@ void MapRenderer::normalizedToPixel(
 float MapRenderer::calculateStarSize(double magnitude) const {
     const auto& style = config_.starStyle;
     
-    // Mappa magnitudine su dimensione simbolo
-    // mag brillanti (< 0) -> simbolo grande
-    // mag deboli (> 10) -> simbolo piccolo
+    // Scala astronomica: la brillantezza raddoppia circa ogni 0.75 magnitudini.
+    // Usiamo una scala di potenza per un effetto più realistico.
+    // mag brillanti (0 o neg) -> r grande
+    // mag deboli (10+) -> r piccolo
     
-    float normalizedMag = (style.magnitudeRange - magnitude) / style.magnitudeRange;
-    normalizedMag = std::max(0.0f, std::min(1.0f, normalizedMag));
+    // Normalizziamo la magnitudine: 0.0 per magnitudine limite, 1.0 per magnitudine 0 o inferiore
+    float normalizedMag = (config_.limitingMagnitude - magnitude) / config_.limitingMagnitude;
+    normalizedMag = std::max(0.0f, normalizedMag);
     
-    return style.minSymbolSize + normalizedMag * (style.maxSymbolSize - style.minSymbolSize);
+    // Usiamo una curva di potenza per dare più peso alle stelle luminose
+    float powerScale = std::pow(normalizedMag, 1.5f);
+    
+    float size = style.minSymbolSize + powerScale * (style.maxSymbolSize - style.minSymbolSize);
+    return std::min(style.maxSymbolSize, size);
 }
 
 uint32_t MapRenderer::calculateStarColor(const core::Star& star) const {
@@ -330,8 +345,11 @@ void MapRenderer::drawStar(ImageBuffer& buffer,
     drawCircleAA(buffer, px, py, size, color);
     
     // Etichetta se necessario
+    // Aumentiamo il limite di magnitudine per le label (molte stelle di occultazione sono mag 8-9)
+    float labelLimit = std::max(config_.starStyle.minMagnitudeForLabel, 10.0f);
+    
     if (config_.starStyle.showNames && !star.getName().empty() &&
-        star.getMagnitude() < config_.starStyle.minMagnitudeForLabel) {
+        star.getMagnitude() < labelLimit) {
         
         MapLabel label;
         label.position = pos;
@@ -343,7 +361,7 @@ void MapRenderer::drawStar(ImageBuffer& buffer,
     
     // Numero SAO se disponibile
     if (config_.starStyle.showSAONumbers && star.getSAONumber().has_value() &&
-        star.getMagnitude() < config_.starStyle.minMagnitudeForLabel) {
+        star.getMagnitude() < labelLimit) {
         
         MapLabel label;
         label.position = core::CartesianCoordinates(pos.getX(), pos.getY() - 0.02);
@@ -388,14 +406,18 @@ void MapRenderer::drawLine(ImageBuffer& buffer, const MapLine& line) {
 }
 
 void MapRenderer::drawLabel(ImageBuffer& buffer, const MapLabel& label) {
-    // TODO: Implementare rendering testo usando libreria come FreeType
-    // Per ora segna solo la posizione
+    // TODO: Implementare rendering testo vero
+    // Per ora disegniamo un piccolo rettangolo per rendere visibile la presenza di testo
     
     int px, py;
     normalizedToPixel(label.position, px, py);
     
-    // Disegna piccolo marker
-    buffer.setPixel(px, py, label.color);
+    // Disegna un piccolo segnaposto (box 3x3) per la label
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+            buffer.setPixel(px + dx, py + dy, label.color);
+        }
+    }
 }
 
 void MapRenderer::drawBorder(ImageBuffer& buffer) {

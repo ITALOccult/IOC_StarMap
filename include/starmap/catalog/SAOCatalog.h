@@ -60,13 +60,6 @@ public:
         double radiusArcsec = 10.0);
 
     /**
-     * @brief Carica cache locale del catalogo SAO (se disponibile)
-     * @param catalogPath Path al file del catalogo SAO
-     * @return true se caricato con successo
-     */
-    bool loadLocalCatalog(const std::string& catalogPath);
-
-    /**
      * @brief Arricchisce una stella GAIA con il numero SAO
      * @param star Puntatore a stella da arricchire
      * @return true se numero SAO trovato e aggiunto

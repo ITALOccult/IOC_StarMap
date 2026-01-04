@@ -165,7 +165,7 @@ map::ImageBuffer OccultationChartBuilder::generateCustomChart(
     }
     
     // Render finale
-    return renderer.render();
+    return renderer.render(stars);
 }
 
 // ============================================================================
@@ -179,7 +179,7 @@ bool OccultationChartBuilder::saveChart(
     
     // TODO: Implementare salvataggio basato sul formato
     // Per ora salva sempre come PNG
-    return imageBuffer.saveToPNG(filename);
+    return imageBuffer.saveAsPNG(filename);
 }
 
 bool OccultationChartBuilder::generateAndSaveApproachChart(
@@ -209,6 +209,22 @@ bool OccultationChartBuilder::generateAndSaveDetailChart(
         if (pImpl_->logLevel >= 1) {
             pImpl_->validationMessages.push_back(
                 std::string("Error generating detail chart: ") + e.what());
+        }
+        return false;
+    }
+}
+
+bool OccultationChartBuilder::generateAndSaveFinderChart(
+    const std::string& filename,
+    const OccultationChartConfig* config) {
+    
+    try {
+        auto buffer = generateFinderChart(config);
+        return saveChart(buffer, filename);
+    } catch (const std::exception& e) {
+        if (pImpl_->logLevel >= 1) {
+            pImpl_->validationMessages.push_back(
+                std::string("Error generating finder chart: ") + e.what());
         }
         return false;
     }
@@ -246,7 +262,7 @@ int OccultationChartBuilder::generateAllCharts(
 // ============================================================================
 
 void OccultationChartBuilder::setCatalogTimeout(int seconds) {
-    pImpl_->catalogManager.setTimeout(seconds);
+    // pImpl_->catalogManager.setTimeout(seconds); // Not available in current API
 }
 
 void OccultationChartBuilder::setCacheEnabled(bool enabled) {
@@ -302,6 +318,8 @@ map::MapConfiguration OccultationChartBuilder::createMapConfig(
     
     // Griglia
     mapConfig.gridStyle.enabled = chartConfig.showGrid;
+    mapConfig.gridStyle.raStepDegrees = chartConfig.gridInterval;
+    mapConfig.gridStyle.decStepDegrees = chartConfig.gridInterval;
     mapConfig.gridStyle.color = chartConfig.gridColor;
     
     // Titolo
@@ -314,6 +332,11 @@ map::MapConfiguration OccultationChartBuilder::createMapConfig(
     // Altri elementi
     mapConfig.showScale = chartConfig.showScale;
     mapConfig.showCompass = chartConfig.showCompass;
+    
+    // Costellazioni e SAO
+    mapConfig.showConstellationLines = chartConfig.showConstellationLines;
+    mapConfig.showConstellationBoundaries = chartConfig.showConstellationBoundaries;
+    mapConfig.starStyle.showSAONumbers = chartConfig.showSAONumbers;
     
     return mapConfig;
 }
