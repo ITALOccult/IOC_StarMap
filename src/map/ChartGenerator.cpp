@@ -6,6 +6,9 @@
 #include "starmap/map/ChartGenerator.h"
 #include "starmap/map/ConstellationData.h"
 #include "starmap/catalog/GaiaClient.h"
+#include "starmap/catalog/SAOCatalog.h"
+#include <sqlite3.h>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -84,6 +87,92 @@ bool ChartGenerator::generate(const ChartConfig& config) {
     return true;
 }
 
+void ChartGenerator::loadBrightStarsFromDatabase() {
+    // Carica stelle luminose (mag < 6) dal database stellar_crossref
+    // per coprire quelle che mancano in Gaia DR3
+    sqlite3* db = nullptr;
+    std::string dbPath = "gaia_sao_xmatch.db";
+    
+    if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK) {
+        return; // Database non disponibile, continua senza
+    }
+    
+    const char* query = R"(
+        SELECT gaia_dr3, ra_deg, dec_deg, magnitude, sao, proper_name, bayer, flamsteed
+        FROM stars
+        WHERE ra_deg BETWEEN ? AND ?
+          AND dec_deg BETWEEN ? AND ?
+          AND magnitude < 6.0
+          AND (gaia_dr3 IS NULL OR gaia_dr3 = 0)
+    )";
+    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_close(db);
+        return;
+    }
+    
+    // Calcola bounding box
+    double raMin = config_.centerRA - config_.fieldRadius;
+    double raMax = config_.centerRA + config_.fieldRadius;
+    double decMin = config_.centerDec - config_.fieldRadius;
+    double decMax = config_.centerDec + config_.fieldRadius;
+    
+    sqlite3_bind_double(stmt, 1, raMin);
+    sqlite3_bind_double(stmt, 2, raMax);
+    sqlite3_bind_double(stmt, 3, decMin);
+    sqlite3_bind_double(stmt, 4, decMax);
+    
+    int addedCount = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        double ra = sqlite3_column_double(stmt, 1);
+        double dec = sqlite3_column_double(stmt, 2);
+        double mag = sqlite3_column_double(stmt, 3);
+        
+        auto star = std::make_shared<core::Star>();
+        star->setCoordinates(core::EquatorialCoordinates(ra, dec));
+        star->setMagnitude(mag);
+        
+        // Aggiungi SAO se disponibile
+        if (sqlite3_column_type(stmt, 4) == SQLITE_INTEGER) {
+            star->setSAONumber(sqlite3_column_int(stmt, 4));
+        }
+        
+        // Aggiungi nome proprio se disponibile
+        if (sqlite3_column_type(stmt, 5) == SQLITE_TEXT) {
+            const char* name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+            if (name && strlen(name) > 0) {
+                star->setName(name);
+            }
+        }
+        
+        // Se non ha nome proprio, usa Bayer o Flamsteed
+        if (star->getName().empty()) {
+            if (sqlite3_column_type(stmt, 6) == SQLITE_TEXT) {
+                const char* bayer = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 6));
+                if (bayer && strlen(bayer) > 0) {
+                    star->setName(bayer);
+                }
+            } else if (sqlite3_column_type(stmt, 7) == SQLITE_INTEGER) {
+                int flamsteed = sqlite3_column_int(stmt, 7);
+                if (flamsteed > 0) {
+                    star->setName(std::to_string(flamsteed));
+                }
+            }
+        }
+        
+        stars_.push_back(star);
+        addedCount++;
+    }
+    
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    
+    if (addedCount > 0) {
+        std::cout << "  Aggiunte " << addedCount << " stelle luminose dal database\n";
+    }
+}
+
 bool ChartGenerator::loadStars() {
     catalog::GaiaClient gaia;
     
@@ -117,6 +206,8 @@ bool ChartGenerator::loadStars() {
     
     auto allStars = gaia.queryRegion(params);
     
+    std::cout << "  Query Gaia: " << allStars.size() << " stelle trovate (raggio " << diagonalRadius << "°)\n";
+    
     // Filtra per il rettangolo effettivo (non il cerchio)
     double cosCenter = std::cos(config_.centerDec * M_PI / 180.0);
     
@@ -139,6 +230,8 @@ bool ChartGenerator::loadStars() {
         }
     }
     
+    std::cout << "  Stelle nel rettangolo: " << stars_.size() << " (dopo filtro geometrico)\n";
+    
     // Filtra per magnitudine minima
     if (config_.minMagnitude > -10) {
         stars_.erase(
@@ -147,6 +240,29 @@ bool ChartGenerator::loadStars() {
             stars_.end()
         );
     }
+    
+    // Arricchisci stelle con numeri SAO se richiesto
+    if (config_.showSAONumbers) {
+        catalog::SAOCatalog saoCatalog;
+        int enrichedCount = 0;
+        for (auto& star : stars_) {
+            if (star->getMagnitude() <= config_.saoMagnitudeLimit) {
+                if (saoCatalog.enrichWithSAO(star)) {
+                    enrichedCount++;
+                }
+            }
+        }
+        // Debug: mostra quante stelle hanno SAO
+        if (enrichedCount > 0) {
+            std::cout << "  Arricchite " << enrichedCount << " stelle con numeri SAO\n";
+        }
+    }
+    
+    // Aggiungi stelle luminose dal database che mancano in Gaia (mag < 6)
+    // Molte stelle luminose non sono in Gaia DR3
+    int starsBeforeDB = stars_.size();
+    loadBrightStarsFromDatabase();
+    std::cout << "  Totale stelle dopo integrazione database: " << stars_.size() << "\n";
     
     return true;
 }
@@ -175,7 +291,8 @@ std::string ChartGenerator::getStarColor(double colorIndex) const {
 }
 
 double ChartGenerator::getStarRadius(double magnitude) const {
-    double r = (config_.style.maxStarSize - magnitude * 0.8) * config_.style.starSizeMultiplier;
+    // Aumentata la differenza tra le magnitudini (da 0.8 a 1.8)
+    double r = (config_.style.maxStarSize - magnitude * 1.8) * config_.style.starSizeMultiplier;
     return std::max(config_.style.minStarSize, std::min(config_.style.maxStarSize, r));
 }
 
@@ -261,6 +378,29 @@ bool ChartGenerator::generateSVG(const std::string& path) {
     };
     
     // Griglia e coordinate sugli assi
+    // Calcola intervalli griglia per RA e Dec
+    double decStart = std::floor((config_.centerDec - config_.fieldRadius) / config_.gridInterval) * config_.gridInterval;
+    
+    // Calcola intervallo RA per formare quadrati, basato su declinazione media
+    double raInterval = config_.gridIntervalRA;
+    if (raInterval <= 0.0) {
+        // Auto: compensa per proiezione a questa declinazione
+        double cosDec = std::cos(config_.centerDec * M_PI / 180.0);
+        if (cosDec > 0.1) {
+            raInterval = config_.gridInterval / cosDec;
+        } else {
+            raInterval = config_.gridInterval;
+        }
+        // Arrotonda a multiplo di 5 o 10
+        if (raInterval >= 10.0) {
+            raInterval = std::round(raInterval / 10.0) * 10.0;
+        } else {
+            raInterval = std::round(raInterval / 5.0) * 5.0;
+        }
+        if (raInterval < 5.0) raInterval = 5.0;
+    }
+    double raStart = std::floor((config_.centerRA - config_.fieldRadius) / raInterval) * raInterval;
+    
     if (config_.showGrid) {
         svg << "\n  <!-- Grid and axis labels -->\n";
         svg << "  <g clip-path=\"url(#chartArea)\">\n";
@@ -268,7 +408,6 @@ bool ChartGenerator::generateSVG(const std::string& path) {
             << "\" fill=\"none\" opacity=\"" << s.gridOpacity << "\">\n";
         
         // Linee declinazione orizzontali
-        double decStart = std::floor((config_.centerDec - config_.fieldRadius) / config_.gridInterval) * config_.gridInterval;
         for (double dec = decStart; dec <= config_.centerDec + config_.fieldRadius + 0.1; dec += config_.gridInterval) {
             auto [x1, y1] = projectToChart(config_.centerRA - config_.fieldRadius * 1.5, dec);
             auto [x2, y2] = projectToChart(config_.centerRA + config_.fieldRadius * 1.5, dec);
@@ -277,8 +416,7 @@ bool ChartGenerator::generateSVG(const std::string& path) {
         }
         
         // Linee ascensione retta verticali
-        double raStart = std::floor((config_.centerRA - config_.fieldRadius) / config_.gridInterval) * config_.gridInterval;
-        for (double ra = raStart; ra <= config_.centerRA + config_.fieldRadius + 0.1; ra += config_.gridInterval) {
+        for (double ra = raStart; ra <= config_.centerRA + config_.fieldRadius + 0.1; ra += raInterval) {
             auto [x1, y1] = projectToChart(ra, config_.centerDec - config_.fieldRadius * 1.5);
             auto [x2, y2] = projectToChart(ra, config_.centerDec + config_.fieldRadius * 1.5);
             svg << "      <line x1=\"" << x1 << "\" y1=\"" << y1 
@@ -306,7 +444,7 @@ bool ChartGenerator::generateSVG(const std::string& path) {
         }
         
         // Etichette RA sul bordo inferiore (in ore)
-        for (double ra = raStart; ra <= config_.centerRA + config_.fieldRadius + 0.1; ra += config_.gridInterval) {
+        for (double ra = raStart; ra <= config_.centerRA + config_.fieldRadius + 0.1; ra += raInterval) {
             auto [x, y] = projectToChart(ra, config_.centerDec);
             if (x >= chartX && x <= chartX + chartW) {
                 // Tacca
@@ -327,6 +465,15 @@ bool ChartGenerator::generateSVG(const std::string& path) {
             << "\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"bold\">Right Ascension</text>\n";
         
         svg << "  </g>\n";
+    }
+    
+    // Riquadro esterno
+    if (config_.showBorder) {
+        svg << "\n  <!-- Border frame -->\n";
+        svg << "  <rect x=\"" << chartX << "\" y=\"" << chartY 
+            << "\" width=\"" << chartW << "\" height=\"" << chartH 
+            << "\" fill=\"none\" stroke=\"" << s.borderColor 
+            << "\" stroke-width=\"" << s.borderWidth << "\"/>\n";
     }
     
     // Confini costellazioni (tratteggiati)
@@ -447,16 +594,16 @@ bool ChartGenerator::generateSVG(const std::string& path) {
     }
     svg << "  </g>\n";
     
-    // Etichette stelle (solo nomi comuni e designazioni Flamsteed/Bayer)
-    if (config_.showSAONumbers || config_.showStarLabels) {
+    // Etichette stelle (nomi comuni e designazioni Bayer/Flamsteed)
+    if (config_.showStarLabels) {
         svg << "\n  <!-- Star labels (common names, Flamsteed/Bayer) -->\n";
-        svg << "  <g font-family=\"" << s.fontFamily << "\" font-size=\"" << s.saoFontSize 
-            << "\" fill=\"" << s.labelColor << "\">\n";
+        svg << "  <g font-family=\"" << s.fontFamily << "\" font-size=\"" << s.labelFontSize 
+            << "\" fill=\"" << s.labelColor << "\" font-weight=\"bold\">\n";
         
         int labelCount = 0;
         for (const auto& star : sortedStars) {
             double mag = star->getMagnitude();
-            if (mag > config_.saoMagnitudeLimit) continue;
+            if (mag > config_.labelMagnitudeLimit) continue;
             
             double ra = star->getCoordinates().getRightAscension();
             double dec = star->getCoordinates().getDeclination();
@@ -465,24 +612,62 @@ bool ChartGenerator::generateSVG(const std::string& path) {
             if (x < chartX + 20 || x > chartX + chartW - 20 || 
                 y < chartY + 20 || y > chartY + chartH - 20) continue;
             
-            // Mostra solo se ha un nome comune o designazione Bayer/Flamsteed
             std::string starName = star->getName();
-            if (starName.empty()) continue;  // Skip stelle senza nome
+            if (starName.empty()) continue;
             
             // Filtra: mostra solo nomi comuni (non numeri Gaia/HD/HIP)
-            // Nomi validi: iniziano con lettera, non con "Gaia", "HD", "HIP", "TYC"
             if (starName.find("Gaia") == 0 || 
                 starName.find("HD ") == 0 || 
                 starName.find("HIP ") == 0 ||
                 starName.find("TYC ") == 0) {
-                continue;  // Skip designazioni di catalogo
+                continue;
             }
             
             double r = getStarRadius(mag);
             svg << "    <text x=\"" << x + r + 3 << "\" y=\"" << y - 2 << "\">" 
                 << starName << "</text>\n";
             
-            if (++labelCount > 50) break;  // Limita per leggibilità
+            if (++labelCount > 50) break;
+        }
+        svg << "  </g>\n";
+    }
+    
+    // Numeri SAO (solo per stelle SENZA nome proprio)
+    if (config_.showSAONumbers) {
+        svg << "\n  <!-- SAO numbers (only for unnamed stars) -->\n";
+        svg << "  <g font-family=\"" << s.fontFamily << "\" font-size=\"" << s.saoFontSize 
+            << "\" fill=\"" << s.labelColor << "\" opacity=\"0.7\">\n";
+        
+        int saoCount = 0;
+        for (const auto& star : sortedStars) {
+            double mag = star->getMagnitude();
+            if (mag > config_.saoMagnitudeLimit) continue;
+            
+            // Salta se ha un nome proprio
+            std::string starName = star->getName();
+            bool hasProperName = !starName.empty() && 
+                                starName.find("Gaia") != 0 && 
+                                starName.find("HD ") != 0 && 
+                                starName.find("HIP ") != 0 &&
+                                starName.find("TYC ") != 0;
+            if (hasProperName) continue;
+            
+            // Verifica se ha numero SAO
+            auto saoOpt = star->getSAONumber();
+            if (!saoOpt.has_value()) continue;
+            
+            double ra = star->getCoordinates().getRightAscension();
+            double dec = star->getCoordinates().getDeclination();
+            auto [x, y] = projectToChart(ra, dec);
+            
+            if (x < chartX + 20 || x > chartX + chartW - 20 || 
+                y < chartY + 20 || y > chartY + chartH - 20) continue;
+            
+            double r = getStarRadius(mag);
+            svg << "    <text x=\"" << x + r + 3 << "\" y=\"" << y - 2 << "\">SAO " 
+                << saoOpt.value() << "</text>\n";
+            
+            if (++saoCount > 100) break;
         }
         svg << "  </g>\n";
     }
@@ -623,6 +808,29 @@ bool ChartGenerator::generateSVG(const std::string& path) {
         
         svg << "  </g>\n";
     }
+    
+    // Scala magnitudini (sul lato destro)
+    svg << "\n  <!-- Magnitude scale -->\n";
+    svg << "  <g transform=\"translate(" << config_.width - 80 << ", " << chartY + 30 << ")\" font-family=\"" << s.fontFamily << "\" font-size=\"9\">\n";
+    
+    std::string scaleTextColor = s.printable ? "#333333" : "#aaaaaa";
+    std::string scaleStarColor = s.printable ? "#000000" : "#ffffff";
+    
+    svg << "    <text x=\"30\" y=\"-10\" text-anchor=\"middle\" font-weight=\"bold\" fill=\"" << scaleTextColor << "\">Magnitude</text>\n";
+    
+    // Disegna stelle di esempio per diverse magnitudini
+    for (int mag = 1; mag <= 7; mag++) {
+        double yPos = (mag - 1) * 25;
+        double r = getStarRadius(static_cast<double>(mag));
+        
+        // Cerchio stella
+        svg << "    <circle cx=\"15\" cy=\"" << yPos << "\" r=\"" << r << "\" fill=\"" << scaleStarColor << "\" opacity=\"" << s.starOpacity << "\"/>\n";
+        
+        // Label magnitudine
+        svg << "    <text x=\"30\" y=\"" << yPos + 4 << "\" fill=\"" << scaleTextColor << "\">" << mag << ".0</text>\n";
+    }
+    
+    svg << "  </g>\n";
     
     // Info (stelle totali)
     svg << "\n  <!-- Info -->\n";

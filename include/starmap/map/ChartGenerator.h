@@ -44,10 +44,10 @@ struct ChartStyle {
     
     // Font
     std::string fontFamily = "Arial";
-    int titleFontSize = 24;
-    int subtitleFontSize = 14;
-    int labelFontSize = 10;
-    int saoFontSize = 7;  // Dimensione numeri SAO/HD
+    int titleFontSize = 26;
+    int subtitleFontSize = 16;
+    int labelFontSize = 12;
+    int saoFontSize = 9;  // Dimensione numeri SAO/HD
     
     // Opacità (0.0 - 1.0)
     double gridOpacity = 0.5;
@@ -116,7 +116,8 @@ struct ChartConfig {
     double saoMagnitudeLimit = 6.0;    // SAO/HD fino a questa magnitudine
     
     // Intervallo griglia (gradi)
-    double gridInterval = 5.0;
+    double gridInterval = 5.0;      // Intervallo Declinazione
+    double gridIntervalRA = 0.0;    // Intervallo RA (0 = auto, basato su gridInterval)
     
     // Proiezione
     std::string projection = "stereographic";  // stereographic, gnomonic, orthographic
@@ -269,6 +270,7 @@ private:
     
     // Metodi interni
     bool loadStars();
+    void loadBrightStarsFromDatabase();
     bool generateSVG(const std::string& path);
     bool convertToPNG(const std::string& svgPath, const std::string& pngPath);
     bool convertToJPG(const std::string& svgPath, const std::string& jpgPath);
