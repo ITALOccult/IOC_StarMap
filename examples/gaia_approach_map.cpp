@@ -4,12 +4,7 @@
  * Con linee costellazioni, confini, nomi, Flamsteed, SAO
  */
 
-#include "starmap/catalog/GaiaClient.h"
-#include "starmap/catalog/SAOCatalog.h"
-#include "starmap/catalog/CatalogManager.h"
-#include "starmap/core/Coordinates.h"
-#include "starmap/map/ChartGenerator.h"
-#include "starmap/map/ConstellationData.h"
+#include "starmap/StarMap.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -21,6 +16,11 @@ using namespace starmap;
 
 int main() {
     try {
+        // Inizializza la libreria con path al database
+        config::LibraryConfig::CatalogPaths paths;
+        paths.gaiaSaoDatabase = "gaia_sao_xmatch.db";
+        starmap::initialize(paths);
+        
         std::cout << "═══════════════════════════════════════════════\n";
         std::cout << "  MAPPA DI APPROCCIO COMPLETA\n";
         std::cout << "  Stella: Gaia DR3 3441366322859801216\n";

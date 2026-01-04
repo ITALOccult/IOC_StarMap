@@ -63,7 +63,7 @@ GaiaSAODatabase::GaiaSAODatabase(const std::string& dbPath)
     }
     
     // Verifica che la tabella esista
-    const char* checkQuery = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='gaia_sao_xmatch';";
+    const char* checkQuery = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='stars';";
     sqlite3_stmt* stmt;
     
     if (sqlite3_prepare_v2(pImpl_->db, checkQuery, -1, &stmt, nullptr) == SQLITE_OK) {
@@ -75,7 +75,7 @@ GaiaSAODatabase::GaiaSAODatabase(const std::string& dbPath)
     }
     
     if (!available_) {
-        std::cerr << "Gaia-SAO database table not found. Database may need to be created." << std::endl;
+        std::cerr << "Stellar crossref database table not found." << std::endl;
     }
 }
 
@@ -88,7 +88,7 @@ bool GaiaSAODatabase::isAvailable() const {
 std::optional<int> GaiaSAODatabase::findSAOByGaiaId(long long gaiaSourceId) const {
     if (!isAvailable()) return std::nullopt;
     
-    const char* query = "SELECT sao_number FROM gaia_sao_xmatch WHERE gaia_source_id = ? LIMIT 1;";
+    const char* query = "SELECT sao FROM stars WHERE gaia_dr3 = ? AND sao IS NOT NULL AND sao > 0 LIMIT 1;";
     sqlite3_stmt* stmt;
     
     if (sqlite3_prepare_v2(pImpl_->db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -124,10 +124,11 @@ std::optional<int> GaiaSAODatabase::findSAOByCoordinates(
     
     // Query con bounding box
     const char* query = R"(
-        SELECT sao_number, ra, dec 
-        FROM gaia_sao_xmatch 
-        WHERE ra BETWEEN ? AND ? 
-          AND dec BETWEEN ? AND ?
+        SELECT sao, ra_deg, dec_deg 
+        FROM stars 
+        WHERE ra_deg BETWEEN ? AND ? 
+          AND dec_deg BETWEEN ? AND ?
+          AND sao IS NOT NULL AND sao > 0
         ORDER BY magnitude
         LIMIT 50;
     )";

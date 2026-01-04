@@ -1,5 +1,7 @@
 #include "starmap/catalog/SAOCatalog.h"
 #include "starmap/catalog/GaiaSAODatabase.h"
+#include "starmap/config/LibraryConfig.h"
+#include "starmap/config/LibraryConfig.h"
 #include "starmap/utils/HttpClient.h"
 #include <sstream>
 #include <cmath>
@@ -23,7 +25,8 @@ public:
 
 SAOCatalog::SAOCatalog(const std::string& localDbPath) 
     : pImpl_(std::make_unique<Impl>())
-    , localDatabase_(std::make_unique<GaiaSAODatabase>(localDbPath)) {
+    , localDatabase_(std::make_unique<GaiaSAODatabase>(
+        localDbPath.empty() ? config::LibraryConfig::getInstance().getGaiaSaoDbPath() : localDbPath)) {
     
     if (localDatabase_->isAvailable()) {
         std::cout << "Gaia-SAO local database loaded successfully" << std::endl;
@@ -209,21 +212,8 @@ bool SAOCatalog::enrichWithSAO(std::shared_ptr<core::Star> star) {
         }
     }
     
-    // FALLBACK 3: Query online SIMBAD se disponibile Gaia ID
-    if (star->getGaiaId() > 0) {
-        auto sao = querySIMBADForSAO(star->getGaiaId());
-        if (sao.has_value()) {
-            star->setSAONumber(sao.value());
-            return true;
-        }
-    }
-    
-    // FALLBACK 4: Query online VizieR con coordinate
-    auto sao = crossMatchVizieR(star->getCoordinates(), 5.0);
-    if (sao.has_value()) {
-        star->setSAONumber(sao.value());
-        return true;
-    }
+    // FALLBACK 3 e 4: Query online DISABILITATE per performance
+    // Per usarle, genera prima il database locale con scripts/build_gaia_sao_database.py
     
     return false;
 }

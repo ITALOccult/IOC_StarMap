@@ -17,3 +17,6 @@ cmake-build-*/
 # Generated files
 *.log
 *.out
+stellar_crossref_v2.0/
+stellar_crossref_v3.0.tar.gz
+*.db

@@ -7,6 +7,7 @@
 #include "starmap/map/ConstellationData.h"
 #include "starmap/catalog/GaiaClient.h"
 #include "starmap/catalog/SAOCatalog.h"
+#include "starmap/config/LibraryConfig.h"
 #include <sqlite3.h>
 #include <iostream>
 #include <fstream>
@@ -91,7 +92,7 @@ void ChartGenerator::loadBrightStarsFromDatabase() {
     // Carica stelle luminose (mag < 6) dal database stellar_crossref
     // per coprire quelle che mancano in Gaia DR3
     sqlite3* db = nullptr;
-    std::string dbPath = "gaia_sao_xmatch.db";
+    std::string dbPath = config::LibraryConfig::getInstance().getGaiaSaoDbPath();
     
     if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK) {
         return; // Database non disponibile, continua senza

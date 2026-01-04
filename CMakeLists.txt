@@ -35,6 +35,7 @@ endif()
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${CURL_INCLUDE_DIRS}
+    /Users/michelebigi/VisualStudioCode/GitHub/IOC_GaiaLib/include
 )
 
 # Source files
@@ -53,9 +54,11 @@ set(STARMAP_SOURCES
     src/map/ConstellationData.cpp
     src/config/ConfigurationLoader.cpp
     src/config/JSONConfigLoader.cpp
+    src/config/LibraryConfig.cpp
     src/utils/HttpClient.cpp
-    src/occultation/OccultationData.cpp
-    src/occultation/OccultationChartBuilder.cpp
+    src/StarMap.cpp
+    # src/occultation/OccultationData.cpp
+    # src/occultation/OccultationChartBuilder.cpp
 )
 
 # Header files
@@ -74,6 +77,7 @@ set(STARMAP_HEADERS
     include/starmap/map/ConstellationData.h
     include/starmap/config/ConfigurationLoader.h
     include/starmap/config/JSONConfigLoader.h
+    include/starmap/config/LibraryConfig.h
     include/starmap/utils/HttpClient.h
     include/starmap/occultation/OccultationData.h
     include/starmap/occultation/OccultationChartBuilder.h
@@ -91,7 +95,7 @@ target_include_directories(starmap PUBLIC
 target_link_libraries(starmap
     PUBLIC
         nlohmann_json::nlohmann_json
-        ioc_gaialib
+        /Users/michelebigi/VisualStudioCode/GitHub/IOC_GaiaLib/build/libioc_gaialib.a
     PRIVATE
         ${CURL_LIBRARIES}
         ZLIB::ZLIB

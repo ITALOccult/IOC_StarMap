@@ -76,6 +76,15 @@ else()
     target_link_libraries(approach_full_test PRIVATE "/opt/homebrew/opt/libomp/lib/libomp.dylib")
 endif()
 
+# Gaia approach map
+add_executable(gaia_approach_map gaia_approach_map.cpp)
+target_link_libraries(gaia_approach_map PRIVATE starmap)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(gaia_approach_map PRIVATE OpenMP::OpenMP_CXX)
+else()
+    target_link_libraries(gaia_approach_map PRIVATE "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+endif()
+
 # Installa esempi
 install(TARGETS 
     example_basic 
@@ -86,6 +95,7 @@ install(TARGETS
     occultation_chart
     test_sao_database
     approach_full_test
+    gaia_approach_map
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/examples
 )
 

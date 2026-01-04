@@ -23,10 +23,12 @@
 #include "starmap/map/Projection.h"
 #include "starmap/map/MapRenderer.h"
 #include "starmap/map/GridRenderer.h"
+#include "starmap/map/ChartGenerator.h"
 
 // Configuration
 #include "starmap/config/ConfigurationLoader.h"
 #include "starmap/config/JSONConfigLoader.h"
+#include "starmap/config/LibraryConfig.h"
 
 // Occultation charts
 #include "starmap/occultation/OccultationData.h"
@@ -86,10 +88,20 @@ private:
 };
 
 /**
- * @brief Inizializza la libreria (opzionale)
- * Può essere chiamata per inizializzare risorse globali
+ * @brief Inizializza la libreria con configurazione opzionale
+ * 
+ * Configura i path ai database e cataloghi. Se non chiamata, usa path di default.
+ * 
+ * @param catalogPaths Path ai cataloghi (opzionale)
+ * 
+ * Esempio:
+ * @code
+ * starmap::config::LibraryConfig::CatalogPaths paths;
+ * paths.gaiaSaoDatabase = "/path/to/gaia_sao_xmatch.db";
+ * starmap::initialize(paths);
+ * @endcode
  */
-void initialize();
+void initialize(const config::LibraryConfig::CatalogPaths& catalogPaths = config::LibraryConfig::CatalogPaths());
 
 /**
  * @brief Finalizza la libreria (opzionale)
