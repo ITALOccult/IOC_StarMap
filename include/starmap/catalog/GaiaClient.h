@@ -17,7 +17,22 @@ struct GaiaQueryParameters {
     core::EquatorialCoordinates center;
     double radiusDegrees = 1.0;
     double maxMagnitude = 15.0;
-    int maxResults = 10000;
+    int maxResults = 50000;  // Aumentato da 10000, ma gestito dinamicamente
+    
+    /**
+     * @brief Calcola automaticamente maxResults basato su area e magnitudine
+     * Previene overflow di memoria per campi ampi o magnitudini deboli
+     */
+    void calculateOptimalMaxResults() {
+        // Stima densità stelle: ~1000 stelle/grado² fino a mag 12
+        // Cresce esponenzialmente con magnitudine: 2.5x ogni magnitudine
+        double area = 3.14159 * radiusDegrees * radiusDegrees;
+        double magFactor = std::pow(2.5, maxMagnitude - 12.0);
+        int estimated = static_cast<int>(area * 1000.0 * magFactor);
+        
+        // Limita tra 1000 e 100000 per sicurezza
+        maxResults = std::max(1000, std::min(100000, estimated));
+    }
 };
 
 /**

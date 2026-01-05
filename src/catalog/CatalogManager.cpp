@@ -45,6 +45,9 @@ std::vector<std::shared_ptr<core::Star>> CatalogManager::queryRectangularRegion(
     params.radiusDegrees = radius;
     params.maxMagnitude = maxMagnitude;
     
+    // Calcola automaticamente il limite ottimale
+    params.calculateOptimalMaxResults();
+    
     return queryStars(params, enrichWithSAO);
 }
 

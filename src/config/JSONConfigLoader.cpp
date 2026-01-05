@@ -65,6 +65,10 @@ json JSONConfigLoader::configToJson(const map::MapConfiguration& config) {
     // Magnitudine
     j["limiting_magnitude"] = config.limitingMagnitude;
     
+    // Performance e memoria
+    j["performance"]["max_stars"] = config.maxStars;
+    j["performance"]["star_batch_size"] = config.starBatchSize;
+    
     // Orientamento
     j["orientation"]["rotation_angle"] = config.rotationAngle;
     j["orientation"]["north_up"] = config.northUp;
@@ -96,13 +100,56 @@ json JSONConfigLoader::configToJson(const map::MapConfiguration& config) {
     // Background
     j["background_color"] = config.backgroundColor;
     
-    // Display
+    // Display (backward compatibility)
     j["display"]["show_border"] = config.showBorder;
     j["display"]["show_title"] = config.showTitle;
     j["display"]["title"] = config.title;
     j["display"]["show_scale"] = config.showScale;
     j["display"]["show_legend"] = config.showLegend;
     j["display"]["show_compass"] = config.showCompass;
+    
+    // Stile titolo
+    j["title"]["enabled"] = config.titleStyle.enabled;
+    j["title"]["text"] = config.titleStyle.text;
+    j["title"]["position"] = static_cast<int>(config.titleStyle.position);
+    j["title"]["custom_x"] = config.titleStyle.customX;
+    j["title"]["custom_y"] = config.titleStyle.customY;
+    j["title"]["font_size"] = config.titleStyle.fontSize;
+    j["title"]["text_color"] = config.titleStyle.textColor;
+    j["title"]["background_color"] = config.titleStyle.backgroundColor;
+    j["title"]["show_background"] = config.titleStyle.showBackground;
+    j["title"]["padding_x"] = config.titleStyle.paddingX;
+    j["title"]["padding_y"] = config.titleStyle.paddingY;
+    
+    // Stile bordo
+    j["border"]["enabled"] = config.borderStyle.enabled;
+    j["border"]["color"] = config.borderStyle.color;
+    j["border"]["width"] = config.borderStyle.width;
+    j["border"]["margin"] = config.borderStyle.margin;
+    
+    // Stile bussola
+    j["compass"]["enabled"] = config.compassStyle.enabled;
+    j["compass"]["position"] = static_cast<int>(config.compassStyle.position);
+    j["compass"]["custom_x"] = config.compassStyle.customX;
+    j["compass"]["custom_y"] = config.compassStyle.customY;
+    j["compass"]["size"] = config.compassStyle.size;
+    j["compass"]["north_color"] = config.compassStyle.northColor;
+    j["compass"]["east_color"] = config.compassStyle.eastColor;
+    j["compass"]["line_color"] = config.compassStyle.lineColor;
+    j["compass"]["line_width"] = config.compassStyle.lineWidth;
+    j["compass"]["show_labels"] = config.compassStyle.showLabels;
+    j["compass"]["label_font_size"] = config.compassStyle.labelFontSize;
+    
+    // Stile scala
+    j["scale"]["enabled"] = config.scaleStyle.enabled;
+    j["scale"]["position"] = static_cast<int>(config.scaleStyle.position);
+    j["scale"]["custom_x"] = config.scaleStyle.customX;
+    j["scale"]["custom_y"] = config.scaleStyle.customY;
+    j["scale"]["length"] = config.scaleStyle.length;
+    j["scale"]["color"] = config.scaleStyle.color;
+    j["scale"]["line_width"] = config.scaleStyle.lineWidth;
+    j["scale"]["font_size"] = config.scaleStyle.fontSize;
+    j["scale"]["show_text"] = config.scaleStyle.showText;
     
     // Overlays
     j["overlays"]["constellation_lines"] = config.showConstellationLines;
@@ -111,6 +158,58 @@ json JSONConfigLoader::configToJson(const map::MapConfiguration& config) {
     j["overlays"]["milky_way"] = config.showMilkyWay;
     j["overlays"]["ecliptic"] = config.showEcliptic;
     j["overlays"]["equator"] = config.showEquator;
+    
+    // Scala magnitudini
+    j["magnitude_legend"]["enabled"] = config.magnitudeLegend.enabled;
+    j["magnitude_legend"]["position"] = static_cast<int>(config.magnitudeLegend.position);
+    j["magnitude_legend"]["custom_x"] = config.magnitudeLegend.customX;
+    j["magnitude_legend"]["custom_y"] = config.magnitudeLegend.customY;
+    j["magnitude_legend"]["font_size"] = config.magnitudeLegend.fontSize;
+    j["magnitude_legend"]["text_color"] = config.magnitudeLegend.textColor;
+    j["magnitude_legend"]["background_color"] = config.magnitudeLegend.backgroundColor;
+    j["magnitude_legend"]["show_background"] = config.magnitudeLegend.showBackground;
+    
+    // Rettangoli overlay
+    j["overlay_rectangles"] = json::array();
+    for (const auto& rect : config.overlayRectangles) {
+        json r;
+        r["enabled"] = rect.enabled;
+        r["center_ra"] = rect.centerRA;
+        r["center_dec"] = rect.centerDec;
+        r["width_ra"] = rect.widthRA;
+        r["height_dec"] = rect.heightDec;
+        r["color"] = rect.color;
+        r["line_width"] = rect.lineWidth;
+        r["filled"] = rect.filled;
+        r["fill_color"] = rect.fillColor;
+        r["label"] = rect.label;
+        j["overlay_rectangles"].push_back(r);
+    }
+    
+    // Path overlay
+    j["overlay_paths"] = json::array();
+    for (const auto& path : config.overlayPaths) {
+        json p;
+        p["enabled"] = path.enabled;
+        p["color"] = path.color;
+        p["line_width"] = path.lineWidth;
+        p["show_points"] = path.showPoints;
+        p["point_size"] = path.pointSize;
+        p["show_labels"] = path.showLabels;
+        p["show_direction"] = path.showDirection;
+        p["label"] = path.label;
+        
+        p["points"] = json::array();
+        for (const auto& point : path.points) {
+            json pt;
+            pt["ra"] = point.ra;
+            pt["dec"] = point.dec;
+            pt["label"] = point.label;
+            p["points"].push_back(pt);
+        }
+        
+        j["overlay_paths"].push_back(p);
+    }
     
     // Observer
     if (config.useObservationTime) {
@@ -156,6 +255,12 @@ map::MapConfiguration JSONConfigLoader::jsonToConfig(const json& j) {
     // Magnitudine
     config.limitingMagnitude = j.value("limiting_magnitude", 12.0);
     
+    // Performance e memoria
+    if (j.contains("performance")) {
+        config.maxStars = j["performance"].value("max_stars", 50000);
+        config.starBatchSize = j["performance"].value("star_batch_size", 5000);
+    }
+    
     // Orientamento
     if (j.contains("orientation")) {
         config.rotationAngle = j["orientation"].value("rotation_angle", 0.0);
@@ -193,7 +298,7 @@ map::MapConfiguration JSONConfigLoader::jsonToConfig(const json& j) {
     // Background
     config.backgroundColor = j.value("background_color", 0x000000FFu);
     
-    // Display
+    // Display (backward compatibility)
     if (j.contains("display")) {
         config.showBorder = j["display"].value("show_border", true);
         config.showTitle = j["display"].value("show_title", true);
@@ -201,6 +306,75 @@ map::MapConfiguration JSONConfigLoader::jsonToConfig(const json& j) {
         config.showScale = j["display"].value("show_scale", true);
         config.showLegend = j["display"].value("show_legend", false);
         config.showCompass = j["display"].value("show_compass", true);
+    }
+    
+    // Stile titolo
+    if (j.contains("title")) {
+        config.titleStyle.enabled = j["title"].value("enabled", true);
+        config.titleStyle.text = j["title"].value("text", "");
+        int pos = j["title"].value("position", 1); // TOP_LEFT = 1
+        config.titleStyle.position = static_cast<map::LegendPosition>(pos);
+        config.titleStyle.customX = j["title"].value("custom_x", 0.0f);
+        config.titleStyle.customY = j["title"].value("custom_y", 0.0f);
+        config.titleStyle.fontSize = j["title"].value("font_size", 18.0f);
+        config.titleStyle.textColor = j["title"].value("text_color", 0xFFFFFFFFu);
+        config.titleStyle.backgroundColor = j["title"].value("background_color", 0x00000000u);
+        config.titleStyle.showBackground = j["title"].value("show_background", false);
+        config.titleStyle.paddingX = j["title"].value("padding_x", 10.0f);
+        config.titleStyle.paddingY = j["title"].value("padding_y", 10.0f);
+        
+        // Backward compatibility
+        if (config.titleStyle.text.empty() && !config.title.empty()) {
+            config.titleStyle.text = config.title;
+        }
+        config.titleStyle.enabled = config.titleStyle.enabled && config.showTitle;
+    } else if (!config.title.empty()) {
+        config.titleStyle.enabled = config.showTitle;
+        config.titleStyle.text = config.title;
+    }
+    
+    // Stile bordo
+    if (j.contains("border")) {
+        config.borderStyle.enabled = j["border"].value("enabled", true);
+        config.borderStyle.color = j["border"].value("color", 0xFFFFFFFFu);
+        config.borderStyle.width = j["border"].value("width", 2.0f);
+        config.borderStyle.margin = j["border"].value("margin", 0.0f);
+    } else {
+        config.borderStyle.enabled = config.showBorder;
+    }
+    
+    // Stile bussola
+    if (j.contains("compass")) {
+        config.compassStyle.enabled = j["compass"].value("enabled", true);
+        int pos = j["compass"].value("position", 2); // TOP_RIGHT = 2
+        config.compassStyle.position = static_cast<map::LegendPosition>(pos);
+        config.compassStyle.customX = j["compass"].value("custom_x", 0.0f);
+        config.compassStyle.customY = j["compass"].value("custom_y", 0.0f);
+        config.compassStyle.size = j["compass"].value("size", 80.0f);
+        config.compassStyle.northColor = j["compass"].value("north_color", 0xFF0000FFu);
+        config.compassStyle.eastColor = j["compass"].value("east_color", 0x00FF00FFu);
+        config.compassStyle.lineColor = j["compass"].value("line_color", 0xFFFFFFFFu);
+        config.compassStyle.lineWidth = j["compass"].value("line_width", 2.0f);
+        config.compassStyle.showLabels = j["compass"].value("show_labels", true);
+        config.compassStyle.labelFontSize = j["compass"].value("label_font_size", 10.0f);
+    } else {
+        config.compassStyle.enabled = config.showCompass;
+    }
+    
+    // Stile scala
+    if (j.contains("scale")) {
+        config.scaleStyle.enabled = j["scale"].value("enabled", true);
+        int pos = j["scale"].value("position", 3); // BOTTOM_LEFT = 3
+        config.scaleStyle.position = static_cast<map::LegendPosition>(pos);
+        config.scaleStyle.customX = j["scale"].value("custom_x", 0.0f);
+        config.scaleStyle.customY = j["scale"].value("custom_y", 0.0f);
+        config.scaleStyle.length = j["scale"].value("length", 100.0f);
+        config.scaleStyle.color = j["scale"].value("color", 0xFFFFFFFFu);
+        config.scaleStyle.lineWidth = j["scale"].value("line_width", 2.0f);
+        config.scaleStyle.fontSize = j["scale"].value("font_size", 10.0f);
+        config.scaleStyle.showText = j["scale"].value("show_text", true);
+    } else {
+        config.scaleStyle.enabled = config.showScale;
     }
     
     // Overlays
@@ -211,6 +385,64 @@ map::MapConfiguration JSONConfigLoader::jsonToConfig(const json& j) {
         config.showMilkyWay = j["overlays"].value("milky_way", false);
         config.showEcliptic = j["overlays"].value("ecliptic", false);
         config.showEquator = j["overlays"].value("equator", false);
+    }
+    
+    // Scala magnitudini
+    if (j.contains("magnitude_legend")) {
+        config.magnitudeLegend.enabled = j["magnitude_legend"].value("enabled", false);
+        int pos = j["magnitude_legend"].value("position", 4); // BOTTOM_RIGHT = 4
+        config.magnitudeLegend.position = static_cast<map::LegendPosition>(pos);
+        config.magnitudeLegend.customX = j["magnitude_legend"].value("custom_x", 0.0f);
+        config.magnitudeLegend.customY = j["magnitude_legend"].value("custom_y", 0.0f);
+        config.magnitudeLegend.fontSize = j["magnitude_legend"].value("font_size", 10.0f);
+        config.magnitudeLegend.textColor = j["magnitude_legend"].value("text_color", 0xFFFFFFFFu);
+        config.magnitudeLegend.backgroundColor = j["magnitude_legend"].value("background_color", 0x000000CCu);
+        config.magnitudeLegend.showBackground = j["magnitude_legend"].value("show_background", true);
+    }
+    
+    // Rettangoli overlay
+    if (j.contains("overlay_rectangles") && j["overlay_rectangles"].is_array()) {
+        for (const auto& r : j["overlay_rectangles"]) {
+            map::OverlayRectangle rect;
+            rect.enabled = r.value("enabled", false);
+            rect.centerRA = r.value("center_ra", 0.0);
+            rect.centerDec = r.value("center_dec", 0.0);
+            rect.widthRA = r.value("width_ra", 0.0);
+            rect.heightDec = r.value("height_dec", 0.0);
+            rect.color = r.value("color", 0xFF0000FFu);
+            rect.lineWidth = r.value("line_width", 2.0f);
+            rect.filled = r.value("filled", false);
+            rect.fillColor = r.value("fill_color", 0xFF000033u);
+            rect.label = r.value("label", "");
+            config.overlayRectangles.push_back(rect);
+        }
+    }
+    
+    // Path overlay
+    if (j.contains("overlay_paths") && j["overlay_paths"].is_array()) {
+        for (const auto& p : j["overlay_paths"]) {
+            map::OverlayPath path;
+            path.enabled = p.value("enabled", false);
+            path.color = p.value("color", 0x00FF00FFu);
+            path.lineWidth = p.value("line_width", 2.0f);
+            path.showPoints = p.value("show_points", true);
+            path.pointSize = p.value("point_size", 3.0f);
+            path.showLabels = p.value("show_labels", false);
+            path.showDirection = p.value("show_direction", false);
+            path.label = p.value("label", "");
+            
+            if (p.contains("points") && p["points"].is_array()) {
+                for (const auto& pt : p["points"]) {
+                    map::PathPoint point;
+                    point.ra = pt.value("ra", 0.0);
+                    point.dec = pt.value("dec", 0.0);
+                    point.label = pt.value("label", "");
+                    path.points.push_back(point);
+                }
+            }
+            
+            config.overlayPaths.push_back(path);
+        }
     }
     
     // Observer

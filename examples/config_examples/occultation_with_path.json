@@ -1,0 +1,190 @@
+{
+  "center": {
+    "ra": 85.5,
+    "dec": 8.0
+  },
+  "field_of_view": {
+    "width": 10.0,
+    "height": 10.0
+  },
+  "image": {
+    "width": 1920,
+    "height": 1920
+  },
+  "projection": {
+    "type": "stereographic",
+    "coordinate_system": "equatorial"
+  },
+  "limiting_magnitude": 12.0,
+  "performance": {
+    "max_stars": 40000,
+    "star_batch_size": 4000
+  },
+  "orientation": {
+    "rotation_angle": 0.0,
+    "north_up": true,
+    "east_left": true
+  },
+  "grid": {
+    "enabled": true,
+    "ra_step": 1.0,
+    "dec_step": 1.0,
+    "color": 1077952767,
+    "line_width": 0.5,
+    "show_labels": true,
+    "label_color": 3435973887,
+    "label_font_size": 9.0
+  },
+  "stars": {
+    "min_symbol_size": 0.5,
+    "max_symbol_size": 7.0,
+    "magnitude_range": 10.0,
+    "use_spectral_colors": true,
+    "default_color": 4294967295,
+    "show_names": true,
+    "show_sao_numbers": true,
+    "show_magnitudes": false,
+    "min_magnitude_for_label": 6.0,
+    "label_color": 4294967295,
+    "label_font_size": 7.0
+  },
+  "background_color": 255,
+  "display": {
+    "show_border": true,
+    "show_title": true,
+    "title": "Asteroid (433) Eros Occultation - 2026-01-05",
+    "show_scale": true,
+    "show_legend": false,
+    "show_compass": true
+  },
+  "overlays": {
+    "constellation_lines": false,
+    "constellation_boundaries": false,
+    "constellation_names": false,
+    "milky_way": false,
+    "ecliptic": false,
+    "equator": false
+  },
+  "magnitude_legend": {
+    "enabled": true,
+    "position": 4,
+    "custom_x": 0.0,
+    "custom_y": 0.0,
+    "font_size": 9.0,
+    "text_color": 4294967295,
+    "background_color": 3422552319,
+    "show_background": true
+  },
+  "overlay_rectangles": [
+    {
+      "enabled": true,
+      "center_ra": 85.5,
+      "center_dec": 8.0,
+      "width_ra": 0.5,
+      "height_dec": 0.5,
+      "color": 4278190335,
+      "line_width": 3.0,
+      "filled": false,
+      "fill_color": 855638323,
+      "label": "Occultation Zone"
+    },
+    {
+      "enabled": true,
+      "center_ra": 85.5,
+      "center_dec": 8.0,
+      "width_ra": 2.0,
+      "height_dec": 2.0,
+      "color": 4294902015,
+      "line_width": 1.5,
+      "filled": false,
+      "fill_color": 855572787,
+      "label": "Observation Field"
+    }
+  ],
+  "overlay_paths": [
+    {
+      "enabled": true,
+      "color": 4278255360,
+      "line_width": 3.0,
+      "show_points": true,
+      "point_size": 5.0,
+      "show_labels": false,
+      "show_direction": false,
+      "label": "(433) Eros Path - Jan 5-12, 2026",
+      "points": [
+        {
+          "ra": 84.2,
+          "dec": 9.5,
+          "label": "Jan 5 00:00"
+        },
+        {
+          "ra": 84.5,
+          "dec": 9.2,
+          "label": "Jan 6 00:00"
+        },
+        {
+          "ra": 84.8,
+          "dec": 8.9,
+          "label": "Jan 7 00:00"
+        },
+        {
+          "ra": 85.1,
+          "dec": 8.6,
+          "label": "Jan 8 00:00"
+        },
+        {
+          "ra": 85.4,
+          "dec": 8.3,
+          "label": "Jan 9 00:00"
+        },
+        {
+          "ra": 85.5,
+          "dec": 8.0,
+          "label": "OCCULTATION"
+        },
+        {
+          "ra": 85.7,
+          "dec": 7.7,
+          "label": "Jan 10 00:00"
+        },
+        {
+          "ra": 86.0,
+          "dec": 7.4,
+          "label": "Jan 11 00:00"
+        },
+        {
+          "ra": 86.3,
+          "dec": 7.1,
+          "label": "Jan 12 00:00"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "color": 4294967040,
+      "line_width": 2.0,
+      "show_points": true,
+      "point_size": 4.0,
+      "show_labels": false,
+      "show_direction": false,
+      "label": "Shadow Path",
+      "points": [
+        {
+          "ra": 85.45,
+          "dec": 8.05,
+          "label": "Ingress"
+        },
+        {
+          "ra": 85.50,
+          "dec": 8.00,
+          "label": "Mid"
+        },
+        {
+          "ra": 85.55,
+          "dec": 7.95,
+          "label": "Egress"
+        }
+      ]
+    }
+  ]
+}

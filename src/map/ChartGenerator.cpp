@@ -205,6 +205,11 @@ bool ChartGenerator::loadStars() {
     params.radiusDegrees = diagonalRadius;
     params.maxMagnitude = config_.maxMagnitude;
     
+    // Calcola automaticamente il limite ottimale per evitare overflow di memoria
+    params.calculateOptimalMaxResults();
+    
+    std::cout << "  Query Gaia con limite dinamico: " << params.maxResults << " stelle max\n";
+    
     auto allStars = gaia.queryRegion(params);
     
     std::cout << "  Query Gaia: " << allStars.size() << " stelle trovate (raggio " << diagonalRadius << "°)\n";
@@ -213,6 +218,8 @@ bool ChartGenerator::loadStars() {
     double cosCenter = std::cos(config_.centerDec * M_PI / 180.0);
     
     stars_.clear();
+    stars_.reserve(std::min(allStars.size(), static_cast<size_t>(50000)));
+    
     for (const auto& star : allStars) {
         double ra = star->getCoordinates().getRightAscension();
         double dec = star->getCoordinates().getDeclination();
@@ -228,6 +235,13 @@ bool ChartGenerator::loadStars() {
         // Controlla se dentro il rettangolo
         if (std::abs(dra) <= fieldW && std::abs(ddec) <= fieldH) {
             stars_.push_back(star);
+        }
+        
+        // Limita numero stelle per prevenire consumo eccessivo di memoria
+        if (stars_.size() >= static_cast<size_t>(50000)) {
+            std::cout << "  ATTENZIONE: Raggiunto limite di 50000 stelle, troncamento necessario\n";
+            std::cout << "  Suggerimento: riduci limitingMagnitude o fieldOfView per vedere tutte le stelle\n";
+            break;
         }
     }
     

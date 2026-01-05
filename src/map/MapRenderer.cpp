@@ -92,9 +92,46 @@ ImageBuffer MapRenderer::render(
     const std::vector<std::shared_ptr<core::Star>>& stars) {
     
     ImageBuffer buffer = renderBackground();
-    drawStars(buffer, stars);
+    
+    // Se troppe stelle, usa rendering in batch
+    if (stars.size() > static_cast<size_t>(config_.starBatchSize)) {
+        renderStarsBatched(buffer, stars);
+    } else {
+        drawStars(buffer, stars);
+    }
+    
+    // Disegna overlay personalizzati
+    drawOverlayRectangles(buffer);
+    drawOverlayPaths(buffer);
+    drawMagnitudeLegend(buffer);
     
     return buffer;
+}
+
+void MapRenderer::renderStarsBatched(ImageBuffer& buffer,
+                                     const std::vector<std::shared_ptr<core::Star>>& stars,
+                                     int batchSize) {
+    // Usa dimensione batch dalla config se non specificato
+    if (batchSize <= 0) {
+        batchSize = config_.starBatchSize;
+    }
+    
+    // Processa le stelle in batch per ridurre il consumo di memoria
+    size_t totalStars = stars.size();
+    for (size_t i = 0; i < totalStars; i += batchSize) {
+        size_t end = std::min(i + batchSize, totalStars);
+        
+        // Crea un vettore temporaneo per questo batch
+        std::vector<std::shared_ptr<core::Star>> batch(
+            stars.begin() + i, 
+            stars.begin() + end
+        );
+        
+        // Renderizza questo batch
+        drawStars(buffer, batch);
+        
+        // Il batch viene distrutto qui, liberando memoria
+    }
 }
 
 void MapRenderer::drawBackground(ImageBuffer& buffer) {
@@ -391,6 +428,231 @@ void MapRenderer::drawBorder(ImageBuffer& buffer) {
 
 void MapRenderer::drawTitle(ImageBuffer& buffer) {
     // TODO: Implementare rendering titolo con FreeType
+}
+
+void MapRenderer::drawMagnitudeLegend(ImageBuffer& buffer) {
+    if (!config_.magnitudeLegend.enabled) return;
+    
+    // Determina posizione
+    int x = 0, y = 0;
+    int legendWidth = 150;
+    int legendHeight = 200;
+    int margin = 20;
+    
+    switch (config_.magnitudeLegend.position) {
+        case map::LegendPosition::TOP_LEFT:
+            x = margin;
+            y = margin;
+            break;
+        case map::LegendPosition::TOP_RIGHT:
+            x = buffer.width - legendWidth - margin;
+            y = margin;
+            break;
+        case map::LegendPosition::BOTTOM_LEFT:
+            x = margin;
+            y = buffer.height - legendHeight - margin;
+            break;
+        case map::LegendPosition::BOTTOM_RIGHT:
+            x = buffer.width - legendWidth - margin;
+            y = buffer.height - legendHeight - margin;
+            break;
+        case map::LegendPosition::CUSTOM:
+            x = static_cast<int>(config_.magnitudeLegend.customX * buffer.width);
+            y = static_cast<int>(config_.magnitudeLegend.customY * buffer.height);
+            break;
+        case map::LegendPosition::NONE:
+            return;
+    }
+    
+    // Disegna sfondo se richiesto
+    if (config_.magnitudeLegend.showBackground) {
+        uint32_t bgColor = config_.magnitudeLegend.backgroundColor;
+        for (int dy = 0; dy < legendHeight; ++dy) {
+            for (int dx = 0; dx < legendWidth; ++dx) {
+                int px = x + dx;
+                int py = y + dy;
+                if (px >= 0 && px < buffer.width && py >= 0 && py < buffer.height) {
+                    buffer.setPixel(px, py, bgColor);
+                }
+            }
+        }
+    }
+    
+    // TODO: Disegna simboli stelle e magnitudini con FreeType
+    // Per ora disegna solo cerchi di dimensioni diverse
+    int numSamples = 5;
+    for (int i = 0; i < numSamples; ++i) {
+        double mag = i * 2.0; // mag 0, 2, 4, 6, 8
+        float size = calculateStarSize(mag);
+        int cy = y + 30 + i * 35;
+        int cx = x + 30;
+        
+        drawCircleAA(buffer, cx, cy, size, config_.magnitudeLegend.textColor);
+    }
+}
+
+void MapRenderer::drawOverlayRectangles(ImageBuffer& buffer) {
+    for (const auto& rect : config_.overlayRectangles) {
+        if (rect.enabled) {
+            drawRectangle(buffer, rect);
+        }
+    }
+}
+
+void MapRenderer::drawOverlayPaths(ImageBuffer& buffer) {
+    for (const auto& path : config_.overlayPaths) {
+        if (path.enabled) {
+            drawPath(buffer, path);
+        }
+    }
+}
+
+void MapRenderer::drawRectangle(ImageBuffer& buffer, const OverlayRectangle& rect) {
+    // Converti coordinate celesti in coordinate schermo
+    core::EquatorialCoordinates center(rect.centerRA, rect.centerDec);
+    
+    if (!projection_->isVisible(center)) return;
+    
+    // Calcola i 4 angoli del rettangolo
+    double halfWidthRA = rect.widthRA / 2.0;
+    double halfHeightDec = rect.heightDec / 2.0;
+    
+    // Corregge per la curvatura del cielo se necessario
+    double cosCenter = std::cos(rect.centerDec * M_PI / 180.0);
+    double actualHalfWidthRA = halfWidthRA / (cosCenter > 0.01 ? cosCenter : 0.01);
+    
+    core::EquatorialCoordinates corners[4] = {
+        core::EquatorialCoordinates(rect.centerRA - actualHalfWidthRA, rect.centerDec - halfHeightDec),
+        core::EquatorialCoordinates(rect.centerRA + actualHalfWidthRA, rect.centerDec - halfHeightDec),
+        core::EquatorialCoordinates(rect.centerRA + actualHalfWidthRA, rect.centerDec + halfHeightDec),
+        core::EquatorialCoordinates(rect.centerRA - actualHalfWidthRA, rect.centerDec + halfHeightDec)
+    };
+    
+    // Converti in pixel
+    int px[4], py[4];
+    for (int i = 0; i < 4; ++i) {
+        if (projection_->isVisible(corners[i])) {
+            auto projected = projection_->project(corners[i]);
+            normalizedToPixel(projected, px[i], py[i]);
+        } else {
+            return; // Rettangolo fuori vista
+        }
+    }
+    
+    // Disegna riempimento se richiesto
+    if (rect.filled) {
+        // TODO: Implementare fill del rettangolo
+    }
+    
+    // Disegna bordi
+    for (int i = 0; i < 4; ++i) {
+        int next = (i + 1) % 4;
+        
+        // Bresenham line drawing
+        int x0 = px[i], y0 = py[i];
+        int x1 = px[next], y1 = py[next];
+        
+        int dx = std::abs(x1 - x0);
+        int dy = std::abs(y1 - y0);
+        int sx = (x0 < x1) ? 1 : -1;
+        int sy = (y0 < y1) ? 1 : -1;
+        int err = dx - dy;
+        
+        while (true) {
+            if (x0 >= 0 && x0 < buffer.width && y0 >= 0 && y0 < buffer.height) {
+                // Disegna linea più spessa
+                for (int w = -static_cast<int>(rect.lineWidth/2); w <= static_cast<int>(rect.lineWidth/2); ++w) {
+                    if (x0 + w >= 0 && x0 + w < buffer.width) {
+                        buffer.setPixel(x0 + w, y0, rect.color);
+                    }
+                    if (y0 + w >= 0 && y0 + w < buffer.height) {
+                        buffer.setPixel(x0, y0 + w, rect.color);
+                    }
+                }
+            }
+            
+            if (x0 == x1 && y0 == y1) break;
+            
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x0 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
+}
+
+void MapRenderer::drawPath(ImageBuffer& buffer, const OverlayPath& path) {
+    if (path.points.size() < 2) return;
+    
+    // Disegna linee tra i punti
+    for (size_t i = 0; i < path.points.size() - 1; ++i) {
+        const auto& p1 = path.points[i];
+        const auto& p2 = path.points[i + 1];
+        
+        core::EquatorialCoordinates coord1(p1.ra, p1.dec);
+        core::EquatorialCoordinates coord2(p2.ra, p2.dec);
+        
+        if (!projection_->isVisible(coord1) || !projection_->isVisible(coord2)) continue;
+        
+        auto proj1 = projection_->project(coord1);
+        auto proj2 = projection_->project(coord2);
+        
+        int x0, y0, x1, y1;
+        normalizedToPixel(proj1, x0, y0);
+        normalizedToPixel(proj2, x1, y1);
+        
+        // Bresenham line drawing
+        int dx = std::abs(x1 - x0);
+        int dy = std::abs(y1 - y0);
+        int sx = (x0 < x1) ? 1 : -1;
+        int sy = (y0 < y1) ? 1 : -1;
+        int err = dx - dy;
+        
+        while (true) {
+            if (x0 >= 0 && x0 < buffer.width && y0 >= 0 && y0 < buffer.height) {
+                // Disegna linea più spessa
+                for (int w = -static_cast<int>(path.lineWidth/2); w <= static_cast<int>(path.lineWidth/2); ++w) {
+                    if (x0 + w >= 0 && x0 + w < buffer.width) {
+                        buffer.setPixel(x0 + w, y0, path.color);
+                    }
+                    if (y0 + w >= 0 && y0 + w < buffer.height) {
+                        buffer.setPixel(x0, y0 + w, path.color);
+                    }
+                }
+            }
+            
+            if (x0 == x1 && y0 == y1) break;
+            
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x0 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
+    
+    // Disegna i punti se richiesto
+    if (path.showPoints) {
+        for (const auto& point : path.points) {
+            core::EquatorialCoordinates coord(point.ra, point.dec);
+            if (!projection_->isVisible(coord)) continue;
+            
+            auto projected = projection_->project(coord);
+            int px, py;
+            normalizedToPixel(projected, px, py);
+            
+            drawCircleAA(buffer, px, py, path.pointSize, path.color);
+        }
+    }
 }
 
 } // namespace map

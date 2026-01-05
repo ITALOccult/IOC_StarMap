@@ -1,0 +1,68 @@
+{
+  "center": {
+    "ra": 83.75,
+    "dec": 5.0
+  },
+  "field_of_view": {
+    "width": 15.0,
+    "height": 15.0
+  },
+  "image": {
+    "width": 2400,
+    "height": 2400
+  },
+  "projection": {
+    "type": "stereographic",
+    "coordinate_system": "equatorial"
+  },
+  "limiting_magnitude": 13.0,
+  "performance": {
+    "max_stars": 75000,
+    "star_batch_size": 7500
+  },
+  "orientation": {
+    "rotation_angle": 0.0,
+    "north_up": true,
+    "east_left": true
+  },
+  "grid": {
+    "enabled": true,
+    "ra_step": 2.0,
+    "dec_step": 2.0,
+    "color": 1077952767,
+    "line_width": 0.5,
+    "show_labels": true,
+    "label_color": 3435973887,
+    "label_font_size": 10.0
+  },
+  "stars": {
+    "min_symbol_size": 0.5,
+    "max_symbol_size": 8.0,
+    "magnitude_range": 10.0,
+    "use_spectral_colors": true,
+    "default_color": 4294967295,
+    "show_names": true,
+    "show_sao_numbers": true,
+    "show_magnitudes": false,
+    "min_magnitude_for_label": 5.0,
+    "label_color": 4294967295,
+    "label_font_size": 8.0
+  },
+  "background_color": 255,
+  "display": {
+    "show_border": true,
+    "show_title": true,
+    "title": "Orion Region - Wide Field (Memory Optimized)",
+    "show_scale": true,
+    "show_legend": false,
+    "show_compass": true
+  },
+  "overlays": {
+    "constellation_lines": true,
+    "constellation_boundaries": false,
+    "constellation_names": true,
+    "milky_way": false,
+    "ecliptic": false,
+    "equator": false
+  }
+}

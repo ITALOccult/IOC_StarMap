@@ -1,0 +1,160 @@
+{
+  "center": {
+    "ra": 83.75,
+    "dec": 5.0
+  },
+  "field_of_view": {
+    "width": 12.0,
+    "height": 12.0
+  },
+  "image": {
+    "width": 2400,
+    "height": 2400
+  },
+  "projection": {
+    "type": "stereographic",
+    "coordinate_system": "equatorial"
+  },
+  "limiting_magnitude": 11.5,
+  "performance": {
+    "max_stars": 50000,
+    "star_batch_size": 5000
+  },
+  "orientation": {
+    "rotation_angle": 0.0,
+    "north_up": true,
+    "east_left": true
+  },
+  "grid": {
+    "enabled": true,
+    "ra_step": 1.5,
+    "dec_step": 1.5,
+    "color": 1077952767,
+    "line_width": 0.5,
+    "show_labels": true,
+    "label_color": 3435973887,
+    "label_font_size": 9.0
+  },
+  "stars": {
+    "min_symbol_size": 0.5,
+    "max_symbol_size": 8.0,
+    "magnitude_range": 10.0,
+    "use_spectral_colors": true,
+    "default_color": 4294967295,
+    "show_names": true,
+    "show_sao_numbers": true,
+    "show_magnitudes": false,
+    "min_magnitude_for_label": 5.0,
+    "label_color": 4294967295,
+    "label_font_size": 8.0
+  },
+  "background_color": 255,
+  "title": {
+    "enabled": true,
+    "text": "Orion Region - Fully Configured",
+    "position": 1,
+    "custom_x": 0.0,
+    "custom_y": 0.0,
+    "font_size": 20.0,
+    "text_color": 4294967295,
+    "background_color": 2147483903,
+    "show_background": true,
+    "padding_x": 15.0,
+    "padding_y": 10.0
+  },
+  "border": {
+    "enabled": true,
+    "color": 4294967295,
+    "width": 3.0,
+    "margin": 0.0
+  },
+  "compass": {
+    "enabled": true,
+    "position": 2,
+    "custom_x": 0.0,
+    "custom_y": 0.0,
+    "size": 90.0,
+    "north_color": 4278190335,
+    "east_color": 16711935,
+    "line_color": 4294967295,
+    "line_width": 2.5,
+    "show_labels": true,
+    "label_font_size": 11.0
+  },
+  "scale": {
+    "enabled": true,
+    "position": 3,
+    "custom_x": 0.0,
+    "custom_y": 0.0,
+    "length": 120.0,
+    "color": 4294967295,
+    "line_width": 3.0,
+    "font_size": 11.0,
+    "show_text": true
+  },
+  "magnitude_legend": {
+    "enabled": true,
+    "position": 4,
+    "custom_x": 0.0,
+    "custom_y": 0.0,
+    "font_size": 10.0,
+    "text_color": 4294967295,
+    "background_color": 3422552319,
+    "show_background": true
+  },
+  "overlays": {
+    "constellation_lines": true,
+    "constellation_boundaries": false,
+    "constellation_names": true,
+    "milky_way": false,
+    "ecliptic": false,
+    "equator": false
+  },
+  "overlay_rectangles": [
+    {
+      "enabled": true,
+      "center_ra": 83.75,
+      "center_dec": 5.0,
+      "width_ra": 4.0,
+      "height_dec": 4.0,
+      "color": 4278190335,
+      "line_width": 2.5,
+      "filled": false,
+      "fill_color": 855638323,
+      "label": "Central Region"
+    }
+  ],
+  "overlay_paths": [
+    {
+      "enabled": true,
+      "color": 4278255360,
+      "line_width": 2.5,
+      "show_points": true,
+      "point_size": 4.5,
+      "show_labels": false,
+      "show_direction": false,
+      "label": "Orion Belt Stars",
+      "points": [
+        {
+          "ra": 85.19,
+          "dec": -1.20,
+          "label": "Alnitak (ζ Ori)"
+        },
+        {
+          "ra": 84.05,
+          "dec": -1.94,
+          "label": "Alnilam (ε Ori)"
+        },
+        {
+          "ra": 83.00,
+          "dec": -2.60,
+          "label": "Mintaka (δ Ori)"
+        }
+      ]
+    }
+  ],
+  "observation": {
+    "latitude": 45.0,
+    "longitude": 10.0
+  }
+}

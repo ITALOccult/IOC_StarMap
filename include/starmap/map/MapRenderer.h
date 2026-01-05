@@ -45,6 +45,17 @@ public:
      * @return Buffer immagine
      */
     ImageBuffer render(const std::vector<std::shared_ptr<core::Star>>& stars);
+    
+    /**
+     * @brief Renderizza stelle su un buffer esistente in batch
+     * Ottimizzato per grandi quantità di stelle, processa in chunk
+     * @param buffer Buffer su cui disegnare
+     * @param stars Lista di stelle da renderizzare
+     * @param batchSize Numero di stelle per batch (default da config)
+     */
+    void renderStarsBatched(ImageBuffer& buffer,
+                           const std::vector<std::shared_ptr<core::Star>>& stars,
+                           int batchSize = 0);
 
     /**
      * @brief Renderizza solo lo sfondo e la griglia
@@ -80,6 +91,13 @@ private:
                    const MapLabel& label);
     void drawBorder(ImageBuffer& buffer);
     void drawTitle(ImageBuffer& buffer);
+    
+    // Nuovi metodi per overlay
+    void drawMagnitudeLegend(ImageBuffer& buffer);
+    void drawOverlayRectangles(ImageBuffer& buffer);
+    void drawOverlayPaths(ImageBuffer& buffer);
+    void drawRectangle(ImageBuffer& buffer, const OverlayRectangle& rect);
+    void drawPath(ImageBuffer& buffer, const OverlayPath& path);
     
     // Conversione coordinate normalizzate -> pixel
     void normalizedToPixel(const core::CartesianCoordinates& normalized,

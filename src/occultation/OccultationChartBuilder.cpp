@@ -139,6 +139,9 @@ map::ImageBuffer OccultationChartBuilder::generateCustomChart(
                                      chartConfig.fieldOfViewHeight) * 0.6;
     params.maxMagnitude = chartConfig.limitingMagnitude;
     
+    // Calcola automaticamente il limite ottimale
+    params.calculateOptimalMaxResults();
+    
     auto stars = pImpl_->catalogManager.queryGaia(params);
     
     // Aggiungi stelle al renderer
