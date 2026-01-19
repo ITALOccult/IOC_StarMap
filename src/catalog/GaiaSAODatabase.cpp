@@ -63,19 +63,22 @@ GaiaSAODatabase::GaiaSAODatabase(const std::string& dbPath)
     }
     
     // Verifica che la tabella esista
-    const char* checkQuery = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='stars';";
+    const char* checkQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='stars';";
     sqlite3_stmt* stmt;
     
     if (sqlite3_prepare_v2(pImpl_->db, checkQuery, -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            int count = sqlite3_column_int(stmt, 0);
-            available_ = (count > 0);
+            available_ = true;
         }
         sqlite3_finalize(stmt);
+    } else {
+        std::cerr << "Failed to prepare table check query: " << sqlite3_errmsg(pImpl_->db) << std::endl;
     }
     
     if (!available_) {
-        std::cerr << "Stellar crossref database table not found." << std::endl;
+        std::cerr << "Stellar crossref database table 'stars' not found in: " << dbPath_ << std::endl;
+    } else {
+        std::cout << "Gaia-SAO local database recognized in: " << dbPath_ << std::endl;
     }
 }
 

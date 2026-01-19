@@ -193,11 +193,11 @@ private:
     
     // Helper methods
     map::MapConfiguration createMapConfig(const OccultationChartConfig& chartConfig);
-    void addAsteroidPath(map::MapRenderer& renderer, 
+    void addAsteroidPath(map::MapConfiguration& mapConfig, 
                          const OccultationChartConfig& chartConfig);
-    void addTargetMarker(map::MapRenderer& renderer,
+    void addTargetMarker(map::MapConfiguration& mapConfig,
                          const OccultationChartConfig& chartConfig);
-    void addInfoOverlay(map::MapRenderer& renderer,
+    void addInfoOverlay(map::MapConfiguration& mapConfig,
                         const OccultationChartConfig& chartConfig);
     std::string generateAutoFilename(ChartType type) const;
     std::string generateTitle(ChartType type) const;

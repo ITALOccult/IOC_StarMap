@@ -115,6 +115,9 @@ struct ChartConfig {
     double labelMagnitudeLimit = 4.0;  // Etichette solo per stelle più luminose
     double saoMagnitudeLimit = 6.0;    // SAO/HD fino a questa magnitudine
     
+    // Target Box
+    double targetBoxSize = 0.0;        // Dimensione del riquadro target in gradi (0.0 = disabilitato)
+    
     // Intervallo griglia (gradi)
     double gridInterval = 5.0;      // Intervallo Declinazione
     double gridIntervalRA = 0.0;    // Intervallo RA (0 = auto, basato su gridInterval)

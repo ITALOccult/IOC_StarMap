@@ -1,3 +1,5 @@
+#include <iostream>
+#include <cmath>
 #include "starmap/StarMap.h"
 
 namespace starmap {

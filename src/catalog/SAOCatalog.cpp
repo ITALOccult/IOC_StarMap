@@ -29,10 +29,10 @@ SAOCatalog::SAOCatalog(const std::string& localDbPath)
         localDbPath.empty() ? config::LibraryConfig::getInstance().getGaiaSaoDbPath() : localDbPath)) {
     
     if (localDatabase_->isAvailable()) {
-        std::cout << "Gaia-SAO local database loaded successfully" << std::endl;
-        std::cout << localDatabase_->getStatistics() << std::endl;
+        std::cout << "✓ Gaia-SAO local database loaded successfully" << std::endl;
     } else {
-        std::cout << "Warning: Gaia-SAO local database not available. Using online queries only." << std::endl;
+        std::cout << "✗ Gaia-SAO local database not available at: " << localDbPath << std::endl;
+        std::cout << "  (Online fallbacks are disabled for performance)" << std::endl;
     }
 }
 

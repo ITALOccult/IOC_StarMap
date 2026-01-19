@@ -31,35 +31,25 @@ if(NOT nlohmann_json_FOUND)
     endif()
 endif()
 
-# Include directories
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${CURL_INCLUDE_DIRS}
-    /Users/michelebigi/VisualStudioCode/GitHub/IOC_GaiaLib/include
-)
-
-# Source files
+# Source files (only existing ones)
 set(STARMAP_SOURCES
     src/StarMap.cpp
     src/core/Coordinates.cpp
     src/core/CelestialObject.cpp
-    src/catalog/GaiaClient.cpp
-    src/catalog/SAOCatalog.cpp
-    src/catalog/CatalogManager.cpp
-    src/catalog/GaiaSAODatabase.cpp
-    src/map/MapConfiguration.cpp
-    src/map/Projection.cpp
-    src/map/MapRenderer.cpp
-    src/map/GridRenderer.cpp
+    src/occultation/OccultationChartBuilder.cpp
+    src/occultation/OccultationData.cpp
+    src/config/LibraryConfig.cpp
     src/map/ChartGenerator.cpp
     src/map/ConstellationData.cpp
-    src/config/ConfigurationLoader.cpp
-    src/config/JSONConfigLoader.cpp
-    src/config/LibraryConfig.cpp
+    src/map/GridRenderer.cpp
+    src/map/MapConfiguration.cpp
+    src/map/MapRenderer.cpp
+    src/map/Projection.cpp
+    src/catalog/CatalogManager.cpp
+    src/catalog/GaiaClient.cpp
+    src/catalog/GaiaSAODatabase.cpp
+    src/catalog/SAOCatalog.cpp
     src/utils/HttpClient.cpp
-    src/StarMap.cpp
-    # src/occultation/OccultationData.cpp
-    # src/occultation/OccultationChartBuilder.cpp
 )
 
 # Header files
@@ -88,15 +78,18 @@ set(STARMAP_HEADERS
 # Create library
 add_library(starmap ${STARMAP_SOURCES} ${STARMAP_HEADERS})
 
+# Include directories
 target_include_directories(starmap PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../IOC_GaiaLib/include>
     $<INSTALL_INTERFACE:include>
+    ${CURL_INCLUDE_DIRS}
 )
 
 target_link_libraries(starmap
     PUBLIC
         nlohmann_json::nlohmann_json
-        /Users/michelebigi/VisualStudioCode/GitHub/IOC_GaiaLib/build/libioc_gaialib.a
+        ioc_gaialib
     PRIVATE
         ${CURL_LIBRARIES}
         ZLIB::ZLIB

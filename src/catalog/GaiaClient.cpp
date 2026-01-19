@@ -1,4 +1,5 @@
 #include "starmap/catalog/GaiaClient.h"
+#include "starmap/config/LibraryConfig.h"
 #include <ioc_gaialib/unified_gaia_catalog.h>
 #include <ioc_gaialib/types.h>
 #include <cmath>
@@ -11,14 +12,29 @@ class GaiaClient::Impl {
 public:
     Impl() {
         std::string home = getenv("HOME");
+        auto& libConfig = config::LibraryConfig::getInstance();
+        
         // Configurazione corretta per UnifiedGaiaCatalog
         std::string config = R"({
             "catalog_type": "multifile_v2",
             "multifile_directory": ")" + home + R"(/.catalog/gaia_mag18_v2_multifile",
             "max_cached_chunks": 100,
-            "log_level": "info"
+            "log_level": "info",
+            "iau_catalog_path": ")" + libConfig.getIauCatalogPath() + R"(",
+            "common_star_names_path": ")" + libConfig.getStarNamesDbPath() + R"("
         })";
         
+        // Se gaiaSaoDbPath non è impostato, usa il default (ma LibraryConfig dovrebbe averlo)
+        if (libConfig.getGaiaSaoDbPath().empty()) {
+             // Fallback to default if somehow empty
+             config = R"({
+                "catalog_type": "multifile_v2",
+                "multifile_directory": ")" + home + R"(/.catalog/gaia_mag18_v2_multifile",
+                "max_cached_chunks": 100,
+                "log_level": "info"
+            })";
+        }
+
         available_ = ioc::gaia::UnifiedGaiaCatalog::initialize(config);
     }
     

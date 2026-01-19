@@ -129,10 +129,6 @@ map::ImageBuffer OccultationChartBuilder::generateCustomChart(
     // Crea configurazione mappa
     map::MapConfiguration mapConfig = createMapConfig(chartConfig);
     
-    // Crea renderer
-    map::MapRenderer renderer(mapConfig);
-    
-    // Query stelle dal catalogo
     catalog::GaiaQueryParameters params;
     params.center = pImpl_->event.targetStar.coordinates;
     params.radiusDegrees = std::max(chartConfig.fieldOfViewWidth, 
@@ -142,27 +138,25 @@ map::ImageBuffer OccultationChartBuilder::generateCustomChart(
     // Calcola automaticamente il limite ottimale
     params.calculateOptimalMaxResults();
     
-    auto stars = pImpl_->catalogManager.queryGaia(params);
-    
-    // Aggiungi stelle al renderer
-    for (const auto& star : stars) {
-        renderer.addStar(star);
-    }
+    auto stars = pImpl_->catalogManager.queryStars(params, true);
     
     // Aggiungi traccia asteroide
     if (chartConfig.showAsteroidPath) {
-        addAsteroidPath(renderer, chartConfig);
+        addAsteroidPath(mapConfig, chartConfig);
     }
     
     // Aggiungi marker per stella target
     if (chartConfig.showTargetStar) {
-        addTargetMarker(renderer, chartConfig);
+        addTargetMarker(mapConfig, chartConfig);
     }
     
     // Aggiungi overlay con informazioni
     if (chartConfig.showCircumstances) {
-        addInfoOverlay(renderer, chartConfig);
+        addInfoOverlay(mapConfig, chartConfig);
     }
+    
+    // Crea renderer con configurazione aggiornata
+    map::MapRenderer renderer(mapConfig);
     
     // Render finale
     return renderer.render(stars);
@@ -342,7 +336,7 @@ map::MapConfiguration OccultationChartBuilder::createMapConfig(
 }
 
 void OccultationChartBuilder::addAsteroidPath(
-    map::MapRenderer& renderer,
+    map::MapConfiguration& mapConfig,
     const OccultationChartConfig& chartConfig) {
     
     // Calcola posizioni dell'asteroide lungo la traccia
@@ -358,23 +352,44 @@ void OccultationChartBuilder::addAsteroidPath(
     }
     
     // Disegna la traccia
-    // TODO: Implementare renderer.addPath() o simile
-    // renderer.addPath(pathPoints, chartConfig.asteroidPathColor);
+    map::OverlayPath path;
+    path.enabled = true;
+    path.color = chartConfig.asteroidPathColor;
+    path.lineWidth = 1.5f;
+    
+    for (const auto& coords : pathPoints) {
+        map::PathPoint pt;
+        pt.ra = coords.getRightAscension();
+        pt.dec = coords.getDeclination();
+        path.points.push_back(pt);
+    }
+    
+    mapConfig.overlayPaths.push_back(path);
 }
 
 void OccultationChartBuilder::addTargetMarker(
-    map::MapRenderer& renderer,
+    map::MapConfiguration& mapConfig,
     const OccultationChartConfig& chartConfig) {
     
     // Evidenzia la stella target
     const auto& star = pImpl_->event.targetStar;
     
-    // TODO: Implementare renderer.addMarker() o simile
-    // renderer.addMarker(star.coordinates, chartConfig.targetStarColor, "TARGET");
+    // Evidenzia la stella target con un rettangolo o cerchio (overlay)
+    map::OverlayRectangle rect;
+    rect.enabled = true;
+    rect.centerRA = star.coordinates.getRightAscension();
+    rect.centerDec = star.coordinates.getDeclination();
+    rect.widthRA = chartConfig.fieldOfViewWidth * 0.05;
+    rect.heightDec = chartConfig.fieldOfViewHeight * 0.05;
+    rect.color = chartConfig.targetStarColor;
+    rect.lineWidth = 2.0f;
+    rect.label = "TARGET";
+    
+    mapConfig.overlayRectangles.push_back(rect);
 }
 
 void OccultationChartBuilder::addInfoOverlay(
-    map::MapRenderer& renderer,
+    map::MapConfiguration& mapConfig,
     const OccultationChartConfig& chartConfig) {
     
     // Crea overlay con informazioni sull'evento
@@ -389,8 +404,8 @@ void OccultationChartBuilder::addInfoOverlay(
     info << "Drop mag: " << std::setprecision(2)
          << pImpl_->event.circumstances.magnitudeDrop;
     
-    // TODO: Implementare renderer.addTextOverlay() o simile
-    // renderer.addTextOverlay(info.str(), position, style);
+    // TODO: Implementare supporto per overlay di testo in MapConfiguration se necessario
+    // Per ora il titolo contiene già molte informazioni
 }
 
 std::string OccultationChartBuilder::generateAutoFilename(ChartType type) const {

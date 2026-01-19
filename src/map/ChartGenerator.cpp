@@ -114,8 +114,9 @@ void ChartGenerator::loadBrightStarsFromDatabase() {
     }
     
     // Calcola bounding box
-    double raMin = config_.centerRA - config_.fieldRadius;
-    double raMax = config_.centerRA + config_.fieldRadius;
+    double raWidth = config_.fieldRadius / std::cos(config_.centerDec * M_PI / 180.0);
+    double raMin = config_.centerRA - raWidth;
+    double raMax = config_.centerRA + raWidth;
     double decMin = config_.centerDec - config_.fieldRadius;
     double decMax = config_.centerDec + config_.fieldRadius;
     
@@ -204,6 +205,7 @@ bool ChartGenerator::loadStars() {
     params.center = core::EquatorialCoordinates(config_.centerRA, config_.centerDec);
     params.radiusDegrees = diagonalRadius;
     params.maxMagnitude = config_.maxMagnitude;
+    params.maxResults = 20000; // Increased to avoid truncation in wide fields
     
     // Calcola automaticamente il limite ottimale per evitare overflow di memoria
     params.calculateOptimalMaxResults();
@@ -752,44 +754,42 @@ bool ChartGenerator::generateSVG(const std::string& path) {
             << s.titleColor << "\">N</text>\n";
     }
     
-    // Rettangolo tratteggiato per campo dettaglio (solo in finder chart)
-    if (config_.preset == ChartPreset::FinderChart && config_.fieldRadius > 3.0) {
-        svg << "\n  <!-- Detail chart field indicator -->\n";
+    // Generic Target Box Indicator
+    if (config_.targetBoxSize > 0.0) {
+        svg << "\n  <!-- Target Box Indicator -->\n";
         
-        // Campo dettaglio: 1° di raggio (2° totale)
-        double detailField = 1.0;
-        
+        // Use configured size
+        double boxSizeDegrees = config_.targetBoxSize;
+        double halfBox = boxSizeDegrees / 2.0;
+
         // Calcola dimensioni in pixel
         double pixelsPerDegree = chartW / (2.0 * config_.fieldRadius);
-        double detailW = detailField * 2.0 * pixelsPerDegree;
-        double detailH = detailField * 2.0 * pixelsPerDegree;
-        
+        double boxPixelW = config_.targetBoxSize * pixelsPerDegree;
+        double boxPixelH = config_.targetBoxSize * pixelsPerDegree;
+
         // Centro del rettangolo (centro del chart)
         double centerX = chartX + chartW / 2.0;
         double centerY = chartY + chartH / 2.0;
         
-        // Disegna 4 linee separate per massima compatibilità
-        double x1 = centerX - detailW/2;
-        double y1 = centerY - detailH/2;
-        double x2 = centerX + detailW/2;
-        double y2 = centerY + detailH/2;
+        // Coordinate per il rettangolo
+        double x1 = centerX - boxPixelW/2;
+        double y1 = centerY - boxPixelH/2;
+        double x2 = centerX + boxPixelW/2;
+        double y2 = centerY + boxPixelH/2;
         
-        std::string detailColor = "rgb(204,0,0)";
+        std::string boxColor = "rgb(204,0,0)";
         
+        // Draw 4 lines for the box
         svg << "  <line x1=\"" << x1 << "\" y1=\"" << y1 << "\" x2=\"" << x2 << "\" y2=\"" << y1 
-            << "\" stroke=\"" << detailColor << "\" stroke-width=\"2\"/>\n";
+            << "\" stroke=\"" << boxColor << "\" stroke-width=\"2\" stroke-dasharray=\"5,3\"/>\n";
         svg << "  <line x1=\"" << x2 << "\" y1=\"" << y1 << "\" x2=\"" << x2 << "\" y2=\"" << y2 
-            << "\" stroke=\"" << detailColor << "\" stroke-width=\"2\"/>\n";
+            << "\" stroke=\"" << boxColor << "\" stroke-width=\"2\" stroke-dasharray=\"5,3\"/>\n";
         svg << "  <line x1=\"" << x2 << "\" y1=\"" << y2 << "\" x2=\"" << x1 << "\" y2=\"" << y2 
-            << "\" stroke=\"" << detailColor << "\" stroke-width=\"2\"/>\n";
+            << "\" stroke=\"" << boxColor << "\" stroke-width=\"2\" stroke-dasharray=\"5,3\"/>\n";
         svg << "  <line x1=\"" << x1 << "\" y1=\"" << y2 << "\" x2=\"" << x1 << "\" y2=\"" << y1 
-            << "\" stroke=\"" << detailColor << "\" stroke-width=\"2\"/>\n";
+            << "\" stroke=\"" << boxColor << "\" stroke-width=\"2\" stroke-dasharray=\"5,3\"/>\n";
         
-        // Etichetta
-        svg << "  <text x=\"" << centerX << "\" y=\"" << centerY - detailH/2 - 5 
-            << "\" text-anchor=\"middle\" font-family=\"" << s.fontFamily 
-            << "\" font-size=\"9\" fill=\"#cc0000\">Detail " 
-            << std::fixed << std::setprecision(0) << detailField * 2 << "°</text>\n";
+        // Optional label logic could go here, but omitted to keep it clean/generic
     }
     
     // Legenda

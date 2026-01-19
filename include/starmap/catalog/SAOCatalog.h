@@ -20,9 +20,9 @@ class SAOCatalog {
 public:
     /**
      * @brief Costruttore con path opzionale al database locale
-     * @param localDbPath Path al database Gaia-SAO locale (default: "gaia_sao_xmatch.db")
+     * @param localDbPath Path al database Gaia-SAO locale (default: "" per usare LibraryConfig)
      */
-    explicit SAOCatalog(const std::string& localDbPath = "gaia_sao_xmatch.db");
+    explicit SAOCatalog(const std::string& localDbPath = "");
     ~SAOCatalog();
 
     /**
